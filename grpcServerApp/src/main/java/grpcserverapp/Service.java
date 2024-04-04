@@ -7,12 +7,12 @@ import servicestubs.*;
 
 
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.google.common.math.IntMath.isPrime;
 
 public class Service extends ServiceGrpc.ServiceImplBase {
 
     public Service(int svcPort) {
-
         System.out.println("Service is available on port:" + svcPort);
     }
 
@@ -82,14 +82,36 @@ public class Service extends ServiceGrpc.ServiceImplBase {
                 System.out.println("  Result of ID=" + addOperands.getAddID() + " " + result.getResult());
                 responseObserver.onNext(result);
             }
+
             @Override
-            public void onError(Throwable throwable) {      }
+            public void onError(Throwable throwable) {
+            }
+
             @Override
             public void onCompleted() {
                 System.out.println("client completed requests -> completed responses");
                 responseObserver.onCompleted();
             }
         };
+    }
+
+    @Override
+    public void findPrimes(IntervalNumbers request, StreamObserver<IntNumber> responseObserver) {
+        System.out.println("primeNumbers called! returned a stream to receive requests");
+
+        if (request.getStart() < 0 || request.getEnd() < 0) {
+            responseObserver.onError(new StatusException(Status.INVALID_ARGUMENT.withDescription("Number < 0 !")));
+            return;
+        }
+
+        for (int i = request.getStart(); i <= request.getEnd(); i++) {
+            if (isPrime(i)) {
+                responseObserver.onNext(IntNumber.newBuilder().setIntnumber(i).build());
+            }
+            simulateExecutionTime();
+        }
+
+        responseObserver.onCompleted();
     }
 
     private void simulateExecutionTime() {
