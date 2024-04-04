@@ -3,7 +3,6 @@ package grpcclientapp;
 import io.grpc.stub.StreamObserver;
 import servicestubs.IntNumber;
 
-
 public class EvenNumbersStream implements StreamObserver<IntNumber> {
     boolean completed=false;
     @Override
