@@ -1,8 +1,6 @@
 package grpcclientapp;
 
-import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
-import servicestubs.AddResult;
 import servicestubs.IntNumber;
 
 
