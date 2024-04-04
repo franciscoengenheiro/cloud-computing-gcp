@@ -8,7 +8,7 @@ import java.util.*;
 
 public class Client {
     // generic ClientApp for Calling a grpc Service
-    private static String svcIP = "localhost";
+    private static String svcIP = "34.67.66.245";
     private static int svcPort = 8000;
     private static ManagedChannel channel;
     private static ServiceGrpc.ServiceStub noBlockStub;
