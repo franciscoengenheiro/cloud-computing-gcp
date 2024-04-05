@@ -1,8 +1,12 @@
 package grpcclientapp;
 
+import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import servicestubs.ExistingTopics;
 import servicestubs.ForumGrpc;
+import servicestubs.ForumMessage;
+import servicestubs.SubscribeUnSubscribe;
 
 import java.util.Scanner;
 
@@ -57,19 +61,61 @@ public class Client {
     }
 
     static void topicSubscribe() {
-        TODO();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter topic name:");
+        String topic = scanner.nextLine();
+        System.out.println("Enter username:");
+        String username = scanner.nextLine();
+
+        SubscribeUnSubscribe request = SubscribeUnSubscribe.newBuilder()
+                .setTopicName(topic)
+                .setUsrName(username)
+                .build();
+
+        ForumMessage response = blockingStub.topicSubscribe(request).next();
+        System.out.println("Subscribed to topic: " + response.getTopicName());
     }
 
     static void topicUnSubscribe() {
-        TODO();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter topic name:");
+        String topic = scanner.nextLine();
+        System.out.println("Enter username:");
+        String username = scanner.nextLine();
+
+        SubscribeUnSubscribe request = SubscribeUnSubscribe.newBuilder()
+                .setTopicName(topic)
+                .setUsrName(username)
+                .build();
+
+        Empty response = blockingStub.topicUnSubscribe(request);
+        System.out.println("Unsubscribed from topic: " + topic);
     }
 
     static void getAllTopics() {
-        TODO();
+        Empty request = Empty.newBuilder().build();
+        ExistingTopics response = blockingStub.getAllTopics(request);
+
+        System.out.println("Existing topics:");
+        for (String topic : response.getTopicNameList()) {
+            System.out.println(topic);
+        }
     }
 
     static void publishMessage() {
-        TODO();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter topic name:");
+        String topic = scanner.nextLine();
+        System.out.println("Enter message:");
+        String message = scanner.nextLine();
+
+        ForumMessage request = ForumMessage.newBuilder()
+                .setTopicName(topic)
+                .setTxtMsg(message)
+                .build();
+
+        Empty response = blockingStub.publishMessage(request);
+        System.out.println("Message published to topic: " + topic);
     }
 
     private static int Menu() {
@@ -90,9 +136,8 @@ public class Client {
         return op;
     }
 
-    private static String read(Scanner input) {
+    private static void read(Scanner input) {
         System.out.println("Press Enter to end");
-        return input.nextLine();
+        input.nextLine();
     }
-
 }
