@@ -21,14 +21,17 @@ public class Service extends ForumGrpc.ForumImplBase {
 
     @Override
     public void topicSubscribe(SubscribeUnSubscribe request, StreamObserver<ForumMessage> responseObserver) {
+        System.out.println("Subscribe called");
         String topic = request.getTopicName();
         String username = request.getUsrName();
 
         topicUserMap.computeIfAbsent(topic, k -> new ConcurrentHashMap<>()).put(username, responseObserver);
+        System.out.println("Subscribe completed");
     }
 
     @Override
     public void topicUnSubscribe(SubscribeUnSubscribe request, StreamObserver<Empty> responseObserver) {
+        System.out.println("Unsubscribe called");
         String topic = request.getTopicName();
         String username = request.getUsrName();
 
@@ -37,22 +40,27 @@ public class Service extends ForumGrpc.ForumImplBase {
             userMap.remove(username);
         }
 
+
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
+        System.out.println("Unsubscribe completed");
     }
 
     @Override
     public void getAllTopics(Empty request, StreamObserver<ExistingTopics> responseObserver) {
+        System.out.println("GetAllTopics called");
         ExistingTopics.Builder existingTopicsBuilder = ExistingTopics.newBuilder();
 
         existingTopicsBuilder.addAllTopicName(topicUserMap.keySet());
 
         responseObserver.onNext(existingTopicsBuilder.build());
         responseObserver.onCompleted();
+        System.out.println("GetAllTopics completed");
     }
 
     @Override
     public void publishMessage(ForumMessage request, StreamObserver<Empty> responseObserver) {
+        System.out.println("PublishMessage called");
         String topic = request.getTopicName();
 
         ConcurrentMap<String, StreamObserver<ForumMessage>> userMap = topicUserMap.get(topic);
@@ -64,5 +72,6 @@ public class Service extends ForumGrpc.ForumImplBase {
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();
+        System.out.println("PublishMessage completed");
     }
 }

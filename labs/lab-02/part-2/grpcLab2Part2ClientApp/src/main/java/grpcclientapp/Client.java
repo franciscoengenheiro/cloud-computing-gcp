@@ -1,6 +1,7 @@
 package grpcclientapp;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.Message;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import servicestubs.ExistingTopics;
@@ -8,6 +9,7 @@ import servicestubs.ForumGrpc;
 import servicestubs.ForumMessage;
 import servicestubs.SubscribeUnSubscribe;
 
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class Client {
@@ -21,7 +23,8 @@ public class Client {
     public static void main(String[] args) {
         try {
             if (args.length == 2) {
-                svcIP = args[0]; svcPort = Integer.parseInt(args[1]);
+                svcIP = args[0];
+                svcPort = Integer.parseInt(args[1]);
             }
             System.out.println("connect to " + svcIP + ":" + svcPort);
             channel = ManagedChannelBuilder.forAddress(svcIP, svcPort)
@@ -39,14 +42,19 @@ public class Client {
                     int option = Menu();
                     switch (option) {
                         case 1:
-                            topicSubscribe(); break;
+                            topicSubscribe();
+                            break;
                         case 2:
-                            topicUnSubscribe(); break;
+                            topicUnSubscribe();
+                            break;
                         case 3:
-                            getAllTopics(); break;
+                            getAllTopics();
+                            break;
                         case 4:
-                            publishMessage(); break;
-                        case 99:  System.exit(0);
+                            publishMessage();
+                            break;
+                        case 99:
+                            System.exit(0);
                     }
                 } catch (Exception ex) {
                     System.out.println("Execution call Error  !");
@@ -71,9 +79,9 @@ public class Client {
                 .setTopicName(topic)
                 .setUsrName(username)
                 .build();
-
-        ForumMessage response = blockingStub.topicSubscribe(request).next();
-        System.out.println("Subscribed to topic: " + response.getTopicName());
+        System.out.println("AQUI");
+        Iterator<ForumMessage> response = blockingStub.topicSubscribe(request);
+        System.out.println("Subscribed to topic: " + topic);
     }
 
     static void topicUnSubscribe() {
