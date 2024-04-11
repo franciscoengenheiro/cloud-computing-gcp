@@ -23,7 +23,7 @@
             <version>1.0</version>
         </dependency>
 
-      </dependencies>
+    </dependencies>
 
     <build>
         <plugins>

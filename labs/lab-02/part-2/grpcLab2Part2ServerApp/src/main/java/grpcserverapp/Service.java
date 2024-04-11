@@ -7,12 +7,12 @@ import servicestubs.ForumGrpc;
 import servicestubs.ForumMessage;
 import servicestubs.SubscribeUnSubscribe;
 
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class Service extends ForumGrpc.ForumImplBase {
 
+    // topic-name -> map {username -> observer}
     private final ConcurrentMap<String, ConcurrentMap<String, StreamObserver<ForumMessage>>> topicUserMap = new ConcurrentHashMap<>();
 
     public Service(int svcPort) {
@@ -26,6 +26,7 @@ public class Service extends ForumGrpc.ForumImplBase {
         String username = request.getUsrName();
 
         topicUserMap.computeIfAbsent(topic, k -> new ConcurrentHashMap<>()).put(username, responseObserver);
+
         System.out.println("Subscribe completed");
     }
 
@@ -37,9 +38,10 @@ public class Service extends ForumGrpc.ForumImplBase {
 
         ConcurrentMap<String, StreamObserver<ForumMessage>> userMap = topicUserMap.get(topic);
         if (userMap != null) {
+            // get observer associated with the username and complete it
+            userMap.get(username).onCompleted();
             userMap.remove(username);
         }
-
 
         responseObserver.onNext(Empty.newBuilder().build());
         responseObserver.onCompleted();

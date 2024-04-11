@@ -35,6 +35,7 @@ service Service {
   // multiple add operations using a bidirectional stream
   rpc multipleAdd(stream AddOperands) returns (stream AddResult);
 }
+// data types ...
 ```
 
 Which maps to the 4 possible operation types between a client and a server:
@@ -113,7 +114,7 @@ Additional notes:
    > [!NOTE]
    > Even in the first operation type,
    > the unary operation (i.e.,
-   > where the client sends a single message to the server and the server sends a single message back)
+   > where the client sends a single message to the server and the server sends a single message back to the client),
    > the `StreamObserver` is still used to send the response back to the client.
 
 3. A method that uses a `StreamObserver` object should call:
