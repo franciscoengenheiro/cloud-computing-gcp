@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class Client {
     // generic ClientApp for Calling a grpc Service
-    private static String svcIP = "localhost";
+    private static String svcIP = "34.29.185.196";
     private static int svcPort = 8000;
     private static ManagedChannel channel;
     private static ForumGrpc.ForumBlockingStub blockingStub;
