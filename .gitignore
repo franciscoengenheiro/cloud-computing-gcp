@@ -43,3 +43,6 @@ qemu-arm-static
 
 # Temporary output dir for artifacts
 mvn-artifacts
+
+# Private key for signing artifacts
+cn2324-t1-g04-private-key.json
