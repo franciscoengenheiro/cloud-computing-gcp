@@ -49,7 +49,7 @@ public class StorageOperations {
                 "southamerica-east1",
                 "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6",
                 "asia-east1", "asia-east2", "asia-northeast1", "asia-south1", "asia-southeast1",
-                "australia-southeast1", "asia", "eu", "us", "EUR4","NAM4"
+                "australia-southeast1", "asia", "eu", "us", "EUR4", "NAM4"
         };
         int option;
         do {
@@ -199,5 +199,39 @@ public class StorageOperations {
 
     // TODO: Develop other Operations. Some of them in slides
 
-
+    public void uploadPublicBlobToBucket() throws Exception {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the name of the Bucket? ");
+        String bucketName = scan.nextLine();
+        System.out.println("Enter the name of the Blob? ");
+        String blobName = scan.nextLine();
+        System.out.println("Enter the pathname of the file to upload? ");
+        String absFileName = scan.nextLine();
+        Path uploadFrom = Paths.get(absFileName);
+        String contentType = Files.probeContentType(uploadFrom);
+        BlobId blobId = BlobId.of(bucketName, blobName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(contentType).build();
+        if (Files.size(uploadFrom) > 1_000_000) {
+            try (WriteChannel writer = storage.writer(blobInfo)) {
+                byte[] buffer = new byte[1024];
+                try (InputStream input = Files.newInputStream(uploadFrom)) {
+                    int limit;
+                    while ((limit = input.read(buffer)) >= 0) {
+                        try {
+                            writer.write(ByteBuffer.wrap(buffer, 0, limit));
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+        } else {
+            byte[] bytes = Files.readAllBytes(uploadFrom);
+            storage.create(blobInfo, bytes);
+        }
+        // Make the blob publicly readable
+        Blob blob = storage.get(blobId);
+        blob.createAcl(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
+        System.out.println("Blob " + blobName + " created in bucket " + bucketName + " with public read access");
+    }
 }

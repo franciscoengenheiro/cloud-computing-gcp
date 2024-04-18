@@ -20,11 +20,12 @@ public class TestStorageOperations {
             System.out.println(" 2: Upload Blob to Bucket");
             System.out.println(" 3: Download Blob from Bucket");
             System.out.println(" 4: Delete a Bucket");
+            System.out.println(" 5: Upload Blob to Bucket with public read access");
             System.out.println("..........");
             System.out.println("99: Exit");
             System.out.print("Enter an Option: ");
             option = scan.nextInt();
-        } while (!((option >= 0 && option <= 4) || option == 99));
+        } while (!((option >= 0 && option <= 5) || option == 99));
         return option;
     }
 
@@ -35,7 +36,7 @@ public class TestStorageOperations {
         //      ex:
         //      $ set GOOGLE_APPLICATION_CREDENTIALS = c:\keys\my-service-account.json
         //
-        StorageOptions    storageOptions = StorageOptions.getDefaultInstance();
+        StorageOptions storageOptions = StorageOptions.getDefaultInstance();
         Storage storage = storageOptions.getService();
         String projID = storageOptions.getProjectId();
         if (projID != null) System.out.println("Current Project ID:" + projID);
@@ -63,6 +64,9 @@ public class TestStorageOperations {
                         break;
                     case 4:
                         soper.deleteBucket();
+                        break;
+                    case 5:
+                        soper.uploadPublicBlobToBucket();
                         break;
                     // TODO: Other Operations
                     //
