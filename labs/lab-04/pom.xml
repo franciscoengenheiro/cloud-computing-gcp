@@ -9,25 +9,30 @@
     <version>1.0</version>
 
     <!--  <packaging>jar</packaging> -->
-     <properties>
-         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-         <java.version>11</java.version>
-         <maven.compiler.source>${java.version}</maven.compiler.source>
-         <maven.compiler.target>${java.version}</maven.compiler.target>
-     </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
 
-     <dependencies>
-         <dependency>
+    <dependencies>
+        <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-pubsub</artifactId>
             <version>1.129.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-firestore</artifactId>
+            <version>3.21.0</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
 
-           <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.7.1</version>
@@ -35,11 +40,11 @@
                     <descriptors>
                         <descriptor>assembly.xml</descriptor>
                     </descriptors>
-					<archive>
-                          <manifest>
-                              <mainClass>googlepubsub.PubSubClient</mainClass>
-                          </manifest>
-                     </archive>
+                    <archive>
+                        <manifest>
+                            <mainClass>googlepubsub.PubSubClient</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
                 <executions>
                     <execution>
@@ -51,10 +56,9 @@
                     </execution>
                 </executions>
             </plugin>
-			
+
         </plugins>
     </build>
-
 
 
 </project>

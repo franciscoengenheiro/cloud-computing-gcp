@@ -1,4 +1,4 @@
-package cn.operations;
+package googleFirestore.domain;
 
 import com.google.cloud.firestore.GeoPoint;
 

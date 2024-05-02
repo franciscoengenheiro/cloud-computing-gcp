@@ -1,4 +1,4 @@
-package cn.operations;
+package googleFirestore.domain;
 
 public class Coordenadas {
   public Double X;

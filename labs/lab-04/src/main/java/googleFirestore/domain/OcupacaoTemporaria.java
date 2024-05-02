@@ -1,4 +1,4 @@
-package cn.operations;
+package googleFirestore.domain;
 
 public class OcupacaoTemporaria {
     public int ID;
