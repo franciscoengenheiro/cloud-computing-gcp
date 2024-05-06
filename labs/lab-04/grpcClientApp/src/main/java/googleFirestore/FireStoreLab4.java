@@ -1,24 +1,32 @@
 package googleFirestore;
 
+import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.*;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static googleFirestore.model.OcupacaoBuilder.insertDocuments;
 
-public class main {
+public class FireStoreLab4 {
+    public FireStoreLab4() throws IOException {
+    }
+
+    static GoogleCredentials credentials;
+    static FirestoreOptions options;
+    static Firestore db;
+    static String collectionName = "lab04";
+
     public static void main(String[] args) {
         try {
+            credentials = GoogleCredentials.getApplicationDefault();
+            options = FirestoreOptions
+                    .newBuilder().setDatabaseId("lab04-db").setCredentials(credentials)
+                    .build();
+            db = options.getService();
             Scanner scanner = new Scanner(System.in);
             int option;
             do {
@@ -32,12 +40,12 @@ public class main {
                 option = scanner.nextInt();
                 switch (option) {
                     case 1:
-                        new main().fireInsert();
+                        fireInsert();
                         break;
                     case 2:
                         System.out.print("Enter the document ID: ");
                         String docId = scanner.next();
-                        new main().getDocumentById(docId);
+                        getDocumentById(docId);
                         break;
                     case 3:
                         getDocumentsByEventDate();
@@ -50,24 +58,15 @@ public class main {
                 }
             } while (option != 0);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e.getMessage());
         }
     }
 
     private static void fireInsert() throws Exception {
-        GoogleCredentials credentials =
-                GoogleCredentials.getApplicationDefault();
-
-        FirestoreOptions options = FirestoreOptions
-                .newBuilder().setDatabaseId("lab04-db").setCredentials(credentials)
-                .build();
-        Firestore db = options.getService();
-
-        insertDocuments("C:\\Users\\Francisco Saraiva\\Desktop\\6 Semestre\\CN\\Laboratorios\\Lab4\\CN-2324-G04\\labs\\lab-04\\grpcClientApp\\src\\main\\java\\res\\OcupacaoEspacosPublicos.csv", db, "lab04");
+        insertDocuments("labs/lab-04/grpcClientApp/src/main/java/res/OcupacaoEspacosPublicos.csv", db, collectionName);
     }
 
-
-    private static void  deleteField(Firestore db, String documentId, String fieldName) throws ExecutionException, InterruptedException {
+    private static void deleteField(Firestore db, String documentId, String fieldName) throws ExecutionException, InterruptedException {
         DocumentReference docRef = db.document(documentId);
         Map<String, Object> updates = new HashMap<>();
         updates.put(fieldName, FieldValue.delete());
@@ -75,7 +74,6 @@ public class main {
         System.out.println("Update time : " + writeResult.get());
 
     }
-
 
     private static void queryDocuments(Firestore db) throws ExecutionException, InterruptedException {
         CollectionReference eventsRef = db.collection("events");
@@ -92,17 +90,9 @@ public class main {
 
     // Get document by ID -  alinea a)
     private static void getDocumentById(String id) throws IOException, ExecutionException, InterruptedException {
-        GoogleCredentials credentials =
-                GoogleCredentials.getApplicationDefault();
-
-        FirestoreOptions options = FirestoreOptions
-                .newBuilder().setDatabaseId("lab04-db").setCredentials(credentials)
-                .build();
-        Firestore db = options.getService();
-
-        DocumentReference docRef = db.collection("lab04").document(id);
+        DocumentReference docRef = db.collection(collectionName).document(id);
         ApiFuture<DocumentSnapshot> future = docRef.get();
-        DocumentSnapshot document = null;
+        DocumentSnapshot document;
         try {
             document = future.get();
         } catch (InterruptedException | ExecutionException e) {
@@ -115,21 +105,14 @@ public class main {
         }
     }
 
-    // Get documents by event date - alinea b)
+
+    // Get documents by event date - alinea e)
     private static void getDocumentsByEventDate() throws Exception {
-        GoogleCredentials credentials =
-                GoogleCredentials.getApplicationDefault();
-
-        FirestoreOptions options = FirestoreOptions
-                .newBuilder().setDatabaseId("lab04-db").setCredentials(credentials)
-                .build();
-        Firestore db = options.getService();
-
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         Date startDate = formatter.parse("31/01/2017");
         Date endDate = formatter.parse("01/03/2017");
 
-        Query query = db.collection("lab04")
+        Query query = db.collection(collectionName)
                 .whereGreaterThanOrEqualTo("event.dtInicio", startDate)
                 .whereLessThan("event.dtInicio", endDate);
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -141,3 +124,5 @@ public class main {
         }
     }
 }
+
+

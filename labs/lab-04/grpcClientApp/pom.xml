@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.isel</groupId>
-    <artifactId>PubSub</artifactId>
+    <artifactId>FireStore</artifactId>
     <version>1.0</version>
 
     <!--  <packaging>jar</packaging> -->
@@ -17,11 +17,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-pubsub</artifactId>
-            <version>1.129.1</version>
-        </dependency>
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-firestore</artifactId>
