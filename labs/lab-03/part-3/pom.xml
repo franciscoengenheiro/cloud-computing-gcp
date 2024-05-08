@@ -23,11 +23,6 @@
             <artifactId>google-cloud-storage</artifactId>
             <version>2.36.1</version>
         </dependency>
-        <dependency>
-            <groupId>isel.grpc</groupId>
-            <artifactId>CN-StorageBaseOperationsContract</artifactId>
-            <version>1.0</version>
-        </dependency>
     </dependencies>
 
     <build>

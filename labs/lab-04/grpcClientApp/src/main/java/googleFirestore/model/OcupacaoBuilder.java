@@ -13,6 +13,7 @@ import java.util.HashMap;
 public class OcupacaoBuilder {
 
     public static OcupacaoTemporaria convertLineToObject(String line) throws ParseException {
+        System.out.println("Converting line to object: " + line);
         String[] cols = line.split(",");
         OcupacaoTemporaria ocup = new OcupacaoTemporaria();
         ocup.ID = Integer.parseInt(cols[0]);
