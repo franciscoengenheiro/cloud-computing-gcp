@@ -26,6 +26,11 @@
             <artifactId>google-cloud-translate</artifactId>
             <version>2.42.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-storage</artifactId>
+            <version>2.36.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -40,7 +45,7 @@
                     </descriptors>
                     <archive>
                         <manifest>
-                            <mainClass>gcpservices.AppMain</mainClass>
+                            <mainClass>gcpservices.LabelsApp</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

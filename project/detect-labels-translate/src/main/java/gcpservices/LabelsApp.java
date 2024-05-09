@@ -1,22 +1,27 @@
 package gcpservices;
 
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
 import com.google.cloud.vision.v1.*;
 import com.google.protobuf.ByteString;
+import storageOperations.StorageOperations;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 
-public class AppMain {
+public class LabelsApp {
 
     static String bucketName;
     static String PROJECT_ID;
     static String blobName;
+    static StorageOperations storageOperations;
 
     public static void main(String[] args) {
         // Assume:
@@ -40,15 +45,15 @@ public class AppMain {
                 System.out.println("Label detected:" + label);
             });
             // Para usar só Translatae API
-                // List<String> labels = new ArrayList<>();
-                // Collections.addAll(labels, "water", "car", "bike");
+            // List<String> labels = new ArrayList<>();
+            // Collections.addAll(labels, "water", "car", "bike");
             // Translate Labels
             List<String> translatedLabels = TranslateLabels(labels);
             translatedLabels.forEach(translatedLabel -> {
                 System.out.println("Label translated (en->pt): " + translatedLabel);
             });
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Error: " + ex.getMessage());
         }
     }
 
@@ -57,17 +62,20 @@ public class AppMain {
         List<String> labels = new ArrayList<>();
 
         // Obtém imagem diretamente de um ficheiro: para testes locais
-            // ByteString imgBytes = ByteString.readFrom(new FileInputStream("cat.jpg"));
-            //Image img = Image.newBuilder().setContent(imgBytes).build();
+        // (EDIT: atualizado para usar os ficheiros da pasta resources)
+        InputStream inputStream = LabelsApp.class.getResourceAsStream("/cat.jpg");
+        ByteString imgBytes = ByteString.readFrom(inputStream);
+        Image img = Image.newBuilder().setContent(imgBytes).build();
         // Obtém imagem diretamente do serviço Storage usando um gs URI (gs://...) para o Blob com imagem
-        Image img = Image.newBuilder()
+        System.out.println("Detecting labels in image: " + gsURI);
+        /*Image img = Image.newBuilder()
                 .setSource(ImageSource.newBuilder().setImageUri(gsURI).build())
-                .build();
+                .build();*/
         Feature feat = Feature.newBuilder().setType(Feature.Type.LABEL_DETECTION).build();
         AnnotateImageRequest request =
                 AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
         requests.add(request);
-        // Initialize client that will be used to send requests. This client only needs to be created
+        // Initialize a client that will be used to send requests. This client only needs to be created
         // once, and can be reused for multiple requests. After completing all of your requests, call
         // the "close" method on the client to safely clean up any remaining background resources.
         try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
@@ -77,11 +85,11 @@ public class AppMain {
                 if (res.hasError()) {
                     System.out.format("Error: %s%n", res.getError().getMessage());
                 } else {
-                    // For full list of available annotations, see http://g.co/cloud/vision/docs
+                    // For the full list of available annotations, see http://g.co/cloud/vision/docs
                     for (EntityAnnotation annotation : res.getLabelAnnotationsList()) {
                         labels.add(annotation.getDescription());
-//                        annotation.getAllFields()
-//                                .forEach((k, v) -> System.out.format("%s : %s%n", k, v.toString()));
+                        /*annotation.getAllFields()
+                           .forEach((k, v) -> System.out.format("%s : %s%n", k, v.toString()));*/
                     }
                 }
             }
@@ -107,5 +115,4 @@ public class AppMain {
             return labelsTranslated;
         }
     }
-
 }
