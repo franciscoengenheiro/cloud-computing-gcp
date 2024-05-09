@@ -4,7 +4,6 @@ import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import servicestubs.*;
-
 import java.util.Random;
 
 public class Service extends ServiceGrpc.ServiceImplBase {

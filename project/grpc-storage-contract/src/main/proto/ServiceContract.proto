@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+// import "google/protobuf/empty.proto";
+option java_multiple_files = true;
+option java_package = "servicestubs";
+
+package grpcservice;
+
+service VisionFlowStorage {
+  //uploads an image file and returns an id
+  rpc uploadImage(ImageUploadData) returns (ImageUploadedData);
+  //uploads multiple image files and returns an id for each
+  rpc uploadImages(stream ImageUploadData) returns (stream ImageUploadedData);
+  //downloads an image file to a path
+  rpc downloadImage(ImageDownloadData) returns (ImageDownloadedData);
+}
+
+//image file to upload
+message ImageUploadData {
+  //image name (e.g. cat)
+  string name = 1;
+  //image content type (e.g. image/jpeg)
+  string contentType = 2;
+  //image bytes to upload
+  bytes data = 3;
+}
+
+//image file uploaded
+message ImageUploadedData {
+  //image id generated after uploading image file
+  string id = 1;
+}
+
+//image file to download
+message ImageDownloadData {
+  //image id generated after uploading image file
+  string id = 1;
+  //where to place the image file after downloading
+  string path = 2;
+}
+
+//image file downloaded
+message ImageDownloadedData {
+  string name = 1;
+  //image id to download
+  bytes data = 2;
+}

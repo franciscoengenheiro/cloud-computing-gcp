@@ -1,27 +1,21 @@
-package gcpservices;
+package grcpservices;
 
-import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
 import com.google.cloud.vision.v1.*;
 import com.google.protobuf.ByteString;
-import storageOperations.StorageOperations;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class LabelsApp {
 
     static String bucketName;
     static String PROJECT_ID;
     static String blobName;
-    static StorageOperations storageOperations;
 
     public static void main(String[] args) {
         // Assume:
@@ -41,17 +35,13 @@ public class LabelsApp {
             }
             // detect labels in pictures
             List<String> labels = detectLabels("gs://" + bucketName + "/" + blobName);
-            labels.forEach(label -> {
-                System.out.println("Label detected:" + label);
-            });
+            labels.forEach(label -> System.out.println("Label detected:" + label));
             // Para usar só Translatae API
             // List<String> labels = new ArrayList<>();
             // Collections.addAll(labels, "water", "car", "bike");
             // Translate Labels
             List<String> translatedLabels = TranslateLabels(labels);
-            translatedLabels.forEach(translatedLabel -> {
-                System.out.println("Label translated (en->pt): " + translatedLabel);
-            });
+            translatedLabels.forEach(translatedLabel -> System.out.println("Label translated (en->pt): " + translatedLabel));
         } catch (Exception ex) {
             System.out.println("Error: " + ex.getMessage());
         }

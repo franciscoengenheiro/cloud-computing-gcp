@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cn.isel</groupId>
-    <artifactId>grpc-server</artifactId>
+    <groupId>isel.grpc</groupId>
+    <artifactId>grpc-client</artifactId>
     <version>1.0</version>
 
     <properties>
@@ -16,21 +16,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-vision</artifactId>
-            <version>3.40.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-translate</artifactId>
-            <version>2.42.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-storage</artifactId>
-            <version>2.36.1</version>
-        </dependency>
         <dependency>
             <groupId>isel.grpc</groupId>
             <artifactId>grpc-storage-contract</artifactId>
@@ -43,14 +28,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
+                <version>3.6.0</version>
                 <configuration>
                     <descriptors>
                         <descriptor>assembly.xml</descriptor>
                     </descriptors>
                     <archive>
                         <manifest>
-                            <mainClass>grcpservices.LabelsApp</mainClass>
+                            <mainClass>grpcclientapp.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -66,5 +51,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
