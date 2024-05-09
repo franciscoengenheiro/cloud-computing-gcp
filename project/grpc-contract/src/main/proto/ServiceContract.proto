@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+option java_multiple_files = true;
+option java_package = "servicestubs";
+
+package grpcservice;
+
+service VisionFlowService {
+  // upload a image file to google cloud storage
+  // returns a gs://$bucket/$blob
+  rpc uploadAnImage(ImageId) returns (ImageBlobId);
+  // upload a list of image files to google cloud storage
+  // returns a list of gs://$bucket/$blob
+  rpc uploadImages(stream ImageIds) returns (stream ImageBlobIds);
+  // download an image file from google cloud storage
+  // returns a image file
+  rpc downloadAnImage(ImageBlobId) returns (google.protobuf.Empty);
+}
+
+message ImageId {
+  // image file path to upload to google cloud storage bucket
+  // e.g. /path/to/image.jpg
+  string path = 1;
+}
+
+message ImageIds {
+  // list of image file paths to upload to google cloud storage bucket
+  // e.g. [/path/to/image1.jpg, /path/to/image2.jpg, ...]
+  repeated string path = 1;
+}
+
+message ImageBlobId {
+  // image id uploaded to google cloud storage bucket as a blob
+  // e.g. gs://$bucket/$blob
+  string gsUri = 1;
+}
+
+message ImageBlobIds {
+  // list of image ids uploaded to google cloud storage bucket as blobs
+  // e.g. [gs://$bucket/$blob1, gs://$bucket/$blob2, ...]
+  repeated string gsUri = 1;
+}
