@@ -18,13 +18,18 @@ public class Service extends VisionFlowServiceGrpc.VisionFlowServiceImplBase {
     }
 
     @Override
-    public void uploadAnImage(ImageId request, StreamObserver<ImageBlobId> responseObserver) throws Exception {
+    public void uploadAnImage(ImageId request, StreamObserver<ImageBlobId> responseObserver) {
         String path = request.getPath();
         String bloblName = path.substring(path.lastIndexOf("/") + 1);
-        BlobId id = storageOperations.uploadBlobToBucket(bucketName, bloblName, path);
-        ImageBlobId response = ImageBlobId.newBuilder().setGsUri(id.toGsUtilUri()).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+        try {
+            BlobId id = storageOperations.uploadBlobToBucket(bucketName, bloblName, path);
+            ImageBlobId response = ImageBlobId.newBuilder().setGsUri(id.toGsUtilUri()).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -54,18 +59,14 @@ public class Service extends VisionFlowServiceGrpc.VisionFlowServiceImplBase {
 
     @Override
     public void downloadAnImage(ImageBlobId request, StreamObserver<Empty> responseObserver) {
-        String gsUri = request.getGsUri();
-        String[] parts = gsUri.split("/");
-        String bucket = parts[2];
-        String name = String.join("/", Arrays.copyOfRange(parts, 3, parts.length));
-        Blob blob = storage.get(BlobId.of(bucket, name));
-        if (blob != null) {
-            byte[] content = blob.getContent();
-            // TODO: Write the content to a file or handle it as needed
+        BlobId blobId = BlobId.fromGsUtilUri(request.getGsUri());
+        try {
+            storageOperations.downloadBlobFromBucket(blobId);
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
-        } else {
-            responseObserver.onError(new Exception("Blob not found"));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
 }

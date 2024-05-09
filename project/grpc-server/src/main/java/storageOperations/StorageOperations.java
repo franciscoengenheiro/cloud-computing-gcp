@@ -156,25 +156,12 @@ public class StorageOperations {
         return blobId;
     }
 
-    public void downloadBlobFromBucket() throws IOException {
-        Scanner scan = new Scanner(System.in);
-        System.out.println("The name of Bucket? ");
-        String bucketName = scan.nextLine();
-        System.out.println("The name of Blob? ");
-        String blobName = scan.nextLine();
-        System.out.println("What is the file pathname for downloading the Blob? ");
-        String absFileName = scan.nextLine();
-        Path downloadTo = Paths.get(absFileName);
-        //System.out.println("download to: "+downloadTo);
-        BlobId blobId = BlobId.of(bucketName, blobName);
+    public void downloadBlobFromBucket(BlobId blobId) throws IOException {
         Blob blob = storage.get(blobId);
-        if (blob == null) {
-            System.out.println("No such Blob exists !");
-            return;
-        }
+        Path downloadTo = Paths.get("project/grpc-server/src/main/resources/" + blob.getName());
         PrintStream writeTo = new PrintStream(Files.newOutputStream(downloadTo));
         if (blob.getSize() < 1_000_000) {
-            // Blob is small read all its content in one request
+            // small blob is returned in a single request
             byte[] content = blob.getContent();
             writeTo.write(content);
         } else {
@@ -189,7 +176,5 @@ public class StorageOperations {
                 }
             }
         }
-        writeTo.close();
-        System.out.println("Blob " + blobName + " downloaded to " + downloadTo);
     }
 }
