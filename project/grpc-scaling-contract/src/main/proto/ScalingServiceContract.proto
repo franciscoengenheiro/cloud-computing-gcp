@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "servicestubs";
+import "google/protobuf/empty.proto";
+
+package grpcservice;
+
+//Service for scaling gRPC server instances and image processing application instances
+service VisionFlowScalingService {
+  //Decrease or increase the number of gRPC server instances
+  rpc scaleGrcpServer(GrpcScalingRequest) returns (google.protobuf.Empty);
+  //Decrease or increase the number of image processing application instances
+  rpc scaleImageProcessing(ImageProcessingScalingRequest) returns (google.protobuf.Empty);
+}
+
+//Messages related to gRPC server instances scaling
+message GrpcScalingRequest {
+  //Number of instances to scale up or down
+  int32 instanceCount = 1;
+}
+
+//Messages related to image processing application instances scaling
+message ImageProcessingScalingRequest {
+  //Number of instances to scale up or down
+  int32 instanceCount = 1;
+}

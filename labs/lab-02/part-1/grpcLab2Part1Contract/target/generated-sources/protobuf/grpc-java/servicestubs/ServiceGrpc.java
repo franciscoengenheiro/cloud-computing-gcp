@@ -4,12 +4,12 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 /**
  * <pre>
- * Service contract operations 
+ * Service contract operations
  * </pre>
  */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler (version 1.61.0)",
-    comments = "Source: ServiceContract.proto")
+    comments = "Source: ElasticServiceContract.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class ServiceGrpc {
 
@@ -219,7 +219,7 @@ public final class ServiceGrpc {
 
   /**
    * <pre>
-   * Service contract operations 
+   * Service contract operations
    * </pre>
    */
   public interface AsyncService {
@@ -278,7 +278,7 @@ public final class ServiceGrpc {
   /**
    * Base class for the server implementation of the service Service.
    * <pre>
-   * Service contract operations 
+   * Service contract operations
    * </pre>
    */
   public static abstract class ServiceImplBase
@@ -292,7 +292,7 @@ public final class ServiceGrpc {
   /**
    * A stub to allow clients to do asynchronous rpc calls to service Service.
    * <pre>
-   * Service contract operations 
+   * Service contract operations
    * </pre>
    */
   public static final class ServiceStub
@@ -367,7 +367,7 @@ public final class ServiceGrpc {
   /**
    * A stub to allow clients to do synchronous rpc calls to service Service.
    * <pre>
-   * Service contract operations 
+   * Service contract operations
    * </pre>
    */
   public static final class ServiceBlockingStub
@@ -419,7 +419,7 @@ public final class ServiceGrpc {
   /**
    * A stub to allow clients to do ListenableFuture-style rpc calls to service Service.
    * <pre>
-   * Service contract operations 
+   * Service contract operations
    * </pre>
    */
   public static final class ServiceFutureStub

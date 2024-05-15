@@ -9,12 +9,12 @@ import servicestubs.*;
 
 import java.util.Objects;
 
-public class StorageService extends VisionFlowStorageGrpc.VisionFlowStorageImplBase {
+public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceImplBase {
     // TODO: should the bucket be created if it doesn't exist yet?
     private final String bucketName = "lab3-bucket-g04-europe";
     private final StorageOperations storageOperations;
 
-    public StorageService() {
+    public VisionFlowFunctionalService() {
         StorageOptions storageOperations = StorageOptions.getDefaultInstance();
         Storage storage = storageOperations.getService();
         String projectId = storageOperations.getProjectId();
@@ -37,10 +37,11 @@ public class StorageService extends VisionFlowStorageGrpc.VisionFlowStorageImplB
         try {
             BlobId id = storageOperations.uploadBlobToBucket(bucketName, blobName, imageData, contentType);
             ImageUploadedData response = ImageUploadedData.newBuilder()
-                    .setId(id.toGsUtilUri())
+                    .setId(id.toGsUtilUri()) // gs://bucketName/blobName
                     .build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -62,4 +63,6 @@ public class StorageService extends VisionFlowStorageGrpc.VisionFlowStorageImplB
             e.printStackTrace();
         }
     }
+
+
 }

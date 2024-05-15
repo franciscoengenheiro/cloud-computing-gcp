@@ -18,7 +18,12 @@
     <dependencies>
         <dependency>
             <groupId>isel.grpc</groupId>
-            <artifactId>grpc-storage-contract</artifactId>
+            <artifactId>grpc-functional-contract</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>isel.grpc</groupId>
+            <artifactId>grpc-scaling-contract</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>

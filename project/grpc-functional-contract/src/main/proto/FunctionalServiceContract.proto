@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "servicestubs";
+import "google/protobuf/timestamp.proto";
+
+package grpcservice;
+
+service VisionFlowFunctionalService {
+  //uploads an image file and returns an id
+  rpc uploadImage(ImageUploadData) returns (ImageUploadedData);
+  //downloads an image file to a path
+  rpc downloadImage(ImageDownloadData) returns (ImageDownloadedData);
+  //gets image processing characteristics
+  rpc getImageCharacteristics(ImageId) returns (ImageCharacteristicsData);
+  //gets file names based on image characteristics and date range
+  rpc getFileNamesByCharacteristic(ImageProcessedData) returns (FileNames);
+}
+
+//image file to upload
+message ImageUploadData {
+  //image name (e.g. cat)
+  string name = 1;
+  //image content type (e.g. image/jpeg)
+  string contentType = 2;
+  //image bytes to upload
+  bytes data = 3;
+}
+
+//image file uploaded
+message ImageUploadedData {
+  //image id generated after uploading image file
+  string id = 1;
+}
+
+//image file to download
+message ImageDownloadData {
+  //image id generated after uploading image file
+  string id = 1;
+  //where to place the image file after downloading
+  string path = 2;
+}
+
+//image file downloaded
+message ImageDownloadedData {
+  string name = 1;
+  //image id to download
+  bytes data = 2;
+}
+
+//request to get image characteristics based on image id
+message ImageId {
+  //image id
+  string id = 1;
+}
+
+//image processing characteristics
+message ImageCharacteristicsData {
+  //list of characteristics found in the image
+  repeated string characteristics = 1;
+  //list of translations corresponding to the characteristics
+  repeated string translations = 2;
+  //date the image was processed
+  google.protobuf.Timestamp date = 3;
+}
+
+//request to get file names based on image characteristics
+message ImageProcessedData {
+  //characteristic to search for
+  string characteristic = 1;
+  //start date to search for
+  google.protobuf.Timestamp startDate = 2;
+  //end date to search for
+  google.protobuf.Timestamp endDate = 3;
+}
+
+//file names found based on image processing characteristics query
+message FileNames {
+  //list of file names found
+  repeated string names = 1;
+}

@@ -18,7 +18,7 @@ public class App {
     private static String svcIP = "localhost";
     private static int svcPort = 8000;
     private static ManagedChannel channel;
-    private static VisionFlowStorageGrpc.VisionFlowStorageBlockingStub blockingStub;
+    private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceBlockingStub blockingStub;
 
     public static void main(String[] args) {
         try {
@@ -33,7 +33,7 @@ public class App {
                     // needing certificates.
                     .usePlaintext()
                     .build();
-            blockingStub = VisionFlowStorageGrpc.newBlockingStub(channel);
+            blockingStub = VisionFlowFunctionalServiceGrpc.newBlockingStub(channel);
             int option;
             do {
                 System.out.println("\n######## MENU ##########");
@@ -104,7 +104,7 @@ public class App {
         Path path = Paths.get(imagePath);
         // parse path to get file name (e.g. /path/to/image.jpg -> image)
         String fileName = path.getFileName().toString().split("\\.")[0];
-        // get file extension
+        // get content type of the image (e.g. image/jpeg)
         String contentType = Files.probeContentType(path);
         // read file content
         ByteString data = ByteString.readFrom(Files.newInputStream(path));
