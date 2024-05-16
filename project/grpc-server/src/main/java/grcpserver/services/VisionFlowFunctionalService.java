@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceImplBase {
-    // TODO: should the bucket be created if it doesn't exist yet?
     private final String bucketName = "lab3-bucket-g04-europe";
     private final CloudStorageOperations cloudStorageOperations;
 

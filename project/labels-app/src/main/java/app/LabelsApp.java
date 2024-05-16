@@ -1,4 +1,4 @@
-package grcpserver.services.labels;
+package app;
 
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.translate.Translate;
@@ -30,17 +30,17 @@ public class LabelsApp {
                     "en"
             );
             // create blob id from bucket name and blob name
-            BlobId blobId = BlobId.of(imageMessage.bucketName(), imageMessage.blobName());
+            BlobId blobId = BlobId.of(imageMessage.getBucketName(), imageMessage.getBlobName());
             // detect labels in pictures
             List<String> labels = detectLabels(blobId.toGsUtilUri());
             // translate labels to a specific language
-            List<String> labelsTranslated = translateLabels(labels, imageMessage.translationLang());
+            List<String> labelsTranslated = translateLabels(labels, imageMessage.getTranslationLang());
             // save processed image in a data structure
             ProcessedImageData processedImageData = new ProcessedImageData(
-                    imageMessage.id(),
+                    imageMessage.getId(),
                     labels,
                     labelsTranslated,
-                    imageMessage.translationLang()
+                    imageMessage.getTranslationLang()
             );
             // save processed image in a database
             // TODO: firestore should have a predefined schema for processed images

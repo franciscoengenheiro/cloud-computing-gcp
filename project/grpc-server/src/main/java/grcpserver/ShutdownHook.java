@@ -3,7 +3,7 @@ package grcpserver;
 import io.grpc.Server;
 
 public class ShutdownHook extends Thread {
-    Server svc;
+    final Server svc;
 
     public ShutdownHook(Server svc) {
         this.svc = svc;
