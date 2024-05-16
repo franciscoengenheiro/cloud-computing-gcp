@@ -1,24 +1,22 @@
 package grpcclientapp;
 
-import com.google.protobuf.ByteString;
+import grpcclientapp.observers.ImageDownloadedStreamObserver;
+import grpcclientapp.observers.ImageUploadedStreamObserver;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
 import servicestubs.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Scanner;
+
+import static grpcclientapp.observers.ImageUploadedStreamObserver.createImageFile;
 
 public class App {
     // generic ClientApp for Calling a grpc Service
     private static String svcIP = "localhost";
     private static int svcPort = 8000;
     private static ManagedChannel channel;
-    private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceBlockingStub blockingStub;
+    private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingStub;
 
     public static void main(String[] args) {
         try {
@@ -33,7 +31,7 @@ public class App {
                     // needing certificates.
                     .usePlaintext()
                     .build();
-            blockingStub = VisionFlowFunctionalServiceGrpc.newBlockingStub(channel);
+            noBlockingStub = VisionFlowFunctionalServiceGrpc.newStub(channel);
             int option;
             do {
                 System.out.println("\n######## MENU ##########");
@@ -48,8 +46,8 @@ public class App {
                     case 1:
                         String path = read("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
                         ImageUploadData imageFile = createImageFile(path);
-                        ImageUploadedData res = blockingStub.uploadImage(imageFile);
-                        System.out.println("Image uploaded with id: " + res.getId());
+                        StreamObserver<ImageUploadedData> uploadImageStreamObserver = new ImageUploadedStreamObserver(imageFile);
+                        noBlockingStub.uploadImage(imageFile, uploadImageStreamObserver);
                         break;
                     case 2:
                         String id = read("Enter the image id to download (e.g., gs://lab3-bucket-g04-europe/cat#jpeg): ");
@@ -58,8 +56,9 @@ public class App {
                                 .setId(id)
                                 .setPath(dirToDownloadTo)
                                 .build();
-                        ImageDownloadedData donwloadedImage = blockingStub.downloadImage(imageDownloadData);
-                        storeImageLocally(donwloadedImage, imageDownloadData.getPath());
+                        StreamObserver<ImageDownloadedData> downloadImageStreamObserver
+                                = new ImageDownloadedStreamObserver(imageDownloadData);
+                        noBlockingStub.downloadImage(imageDownloadData, downloadImageStreamObserver);
                         break;
                     case 0:
                         System.out.println("Exiting...");
@@ -73,46 +72,10 @@ public class App {
         }
     }
 
-    public static void storeImageLocally(ImageDownloadedData downloadedImage, String directory) throws IOException {
-        ByteString imageDataBytes = downloadedImage.getData();
-        createDirectoryIfNotExists(directory);
-        // Write the image data to a file
-        // parse the image name from the id (e.g. cat#jpeg -> cat.jpeg)
-        String imageNameWithExt = downloadedImage.getName().replace("#", ".");
-        String filePath = directory + "/" + imageNameWithExt;
-        System.out.println("Storing image into file: " + filePath);
-        try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
-            outputStream.write(imageDataBytes.toByteArray());
-        }
-    }
-
-    private static void createDirectoryIfNotExists(String directory) {
-        // Create directory if it doesn't exist
-        File dir = new File(directory);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-    }
-
     private static String read(String msg) {
         Scanner input = new Scanner(System.in);
         System.out.print(msg);
         return input.nextLine().trim();
-    }
-
-    private static ImageUploadData createImageFile(String imagePath) throws Exception {
-        Path path = Paths.get(imagePath);
-        // parse path to get file name (e.g. /path/to/image.jpg -> image)
-        String fileName = path.getFileName().toString().split("\\.")[0];
-        // get content type of the image (e.g. image/jpeg)
-        String contentType = Files.probeContentType(path);
-        // read file content
-        ByteString data = ByteString.readFrom(Files.newInputStream(path));
-        return ImageUploadData.newBuilder()
-                .setName(fileName)
-                .setContentType(contentType)
-                .setData(data)
-                .build();
     }
 
 }
