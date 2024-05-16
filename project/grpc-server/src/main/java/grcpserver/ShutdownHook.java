@@ -1,9 +1,11 @@
 package grcpserver;
 
-public class ShutdownHook extends Thread {
-    io.grpc.Server svc;
+import io.grpc.Server;
 
-    public ShutdownHook(io.grpc.Server svc) {
+public class ShutdownHook extends Thread {
+    Server svc;
+
+    public ShutdownHook(Server svc) {
         this.svc = svc;
     }
 

@@ -211,4 +211,5 @@ public class FireStoreLab4 {
         System.out.print(message);
         return scanner.nextLine();
     }
+
 }

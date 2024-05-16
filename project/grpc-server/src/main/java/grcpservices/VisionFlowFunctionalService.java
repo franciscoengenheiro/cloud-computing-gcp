@@ -4,6 +4,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
+import grcpservices.cloudstorage.CloudStorageOperations;
 import io.grpc.stub.StreamObserver;
 import servicestubs.*;
 
@@ -12,7 +13,7 @@ import java.util.Objects;
 public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceImplBase {
     // TODO: should the bucket be created if it doesn't exist yet?
     private final String bucketName = "lab3-bucket-g04-europe";
-    private final StorageOperations storageOperations;
+    private final CloudStorageOperations cloudStorageOperations;
 
     public VisionFlowFunctionalService() {
         StorageOptions storageOperations = StorageOptions.getDefaultInstance();
@@ -20,7 +21,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
         String projectId = storageOperations.getProjectId();
         Objects.requireNonNull(projectId, "GOOGLE_APPLICATION_CREDENTIALS environment variable not set");
         System.out.println("Connected to storage for project: " + projectId);
-        this.storageOperations = new StorageOperations(storage);
+        this.cloudStorageOperations = new CloudStorageOperations(storage);
     }
 
     @Override
@@ -35,7 +36,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
         String blobName = request.getName() + "#" + extension;
         byte[] imageData = request.getData().toByteArray();
         try {
-            BlobId id = storageOperations.uploadBlobToBucket(bucketName, blobName, imageData, contentType);
+            BlobId id = cloudStorageOperations.uploadBlobToBucket(bucketName, blobName, imageData, contentType);
             ImageUploadedData response = ImageUploadedData.newBuilder()
                     .setId(id.toGsUtilUri()) // gs://bucketName/blobName
                     .build();
@@ -52,7 +53,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
         System.out.println("Downloading image from bucket");
         BlobId blobId = BlobId.fromGsUtilUri(request.getId());
         try {
-            byte[] imageBytes = storageOperations.downloadBlobFromBucket(blobId);
+            byte[] imageBytes = cloudStorageOperations.downloadBlobFromBucket(blobId);
             ImageDownloadedData response = ImageDownloadedData.newBuilder()
                     .setData(ByteString.copyFrom(imageBytes))
                     .setName(blobId.getName())
@@ -63,6 +64,5 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             e.printStackTrace();
         }
     }
-
 
 }

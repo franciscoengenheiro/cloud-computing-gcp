@@ -1,4 +1,4 @@
-package grcpservices;
+package grcpservices.cloudstorage;
 
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
@@ -9,12 +9,12 @@ import com.google.cloud.storage.Storage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class StorageOperations {
+public class CloudStorageOperations {
 
     Storage storage;
     int ONE_MB = 1024 * 1024;
 
-    public StorageOperations(Storage storage) {
+    public CloudStorageOperations(Storage storage) {
         this.storage = storage;
     }
 

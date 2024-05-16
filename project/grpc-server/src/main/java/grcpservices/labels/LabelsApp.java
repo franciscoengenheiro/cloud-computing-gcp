@@ -1,21 +1,16 @@
-package grcpservices;
+package grcpservices.labels;
 
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
 import com.google.cloud.vision.v1.*;
-import com.google.protobuf.ByteString;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LabelsApp {
-
-    static String bucketName;
-    static String PROJECT_ID;
-    static String blobName;
 
     public static void main(String[] args) {
         // Assume:
@@ -24,24 +19,33 @@ public class LabelsApp {
         //   conta de serviço com roles "VisionAI Admin" e "Storage Admin"
         // - A API Translate não necessita de Role especifica, funcionando
         //    com qualquer chave válida numa conta de serviço do projeto GCP
+        // TODO: should be on loop to check for new messages
         try {
-            if (args.length != 3) {
-                System.out.println("Use with arguments:<projectId> <bucket> <blob>");
-                System.exit(-1);
-            } else {
-                PROJECT_ID = args[0];
-                bucketName = args[1];
-                blobName = args[2];
-            }
+            // TODO: this app should activily check subscription messages in a pre determined topic
+
+            PubSubImageMessage imageMessage = new PubSubImageMessage(
+                    "1",
+                    "bucketName",
+                    "blobName",
+                    "en"
+            );
+            // create blob id from bucket name and blob name
+            BlobId blobId = BlobId.of(imageMessage.bucketName(), imageMessage.blobName());
             // detect labels in pictures
-            List<String> labels = detectLabels("gs://" + bucketName + "/" + blobName);
-            labels.forEach(label -> System.out.println("Label detected:" + label));
-            // Para usar só Translatae API
-            // List<String> labels = new ArrayList<>();
-            // Collections.addAll(labels, "water", "car", "bike");
-            // Translate Labels
-            List<String> translatedLabels = TranslateLabels(labels);
-            translatedLabels.forEach(translatedLabel -> System.out.println("Label translated (en->pt): " + translatedLabel));
+            List<String> labels = detectLabels(blobId.toGsUtilUri());
+            // translate labels to a specific language
+            List<String> labelsTranslated = translateLabels(labels, imageMessage.translationLang());
+            // save processed image in a data structure
+            ProcessedImageData processedImageData = new ProcessedImageData(
+                    imageMessage.id(),
+                    labels,
+                    labelsTranslated,
+                    imageMessage.translationLang()
+            );
+            // save processed image in a database
+            // TODO: firestore should have a predefined schema for processed images
+            //  and a specific collection for them, logging app will use another collection
+            // firestoreOperations.saveImage(processedImage);
         } catch (Exception ex) {
             System.out.println("Error: " + ex.getMessage());
         }
@@ -50,17 +54,13 @@ public class LabelsApp {
     public static List<String> detectLabels(String gsURI) throws IOException {
         List<AnnotateImageRequest> requests = new ArrayList<>();
         List<String> labels = new ArrayList<>();
-
         // Obtém imagem diretamente de um ficheiro: para testes locais
         // (EDIT: atualizado para usar os ficheiros da pasta resources)
-        InputStream inputStream = LabelsApp.class.getResourceAsStream("/cat.jpg");
-        ByteString imgBytes = ByteString.readFrom(inputStream);
-        Image img = Image.newBuilder().setContent(imgBytes).build();
         // Obtém imagem diretamente do serviço Storage usando um gs URI (gs://...) para o Blob com imagem
         System.out.println("Detecting labels in image: " + gsURI);
-        /*Image img = Image.newBuilder()
+        Image img = Image.newBuilder()
                 .setSource(ImageSource.newBuilder().setImageUri(gsURI).build())
-                .build();*/
+                .build();
         Feature feat = Feature.newBuilder().setType(Feature.Type.LABEL_DETECTION).build();
         AnnotateImageRequest request =
                 AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
@@ -78,8 +78,6 @@ public class LabelsApp {
                     // For the full list of available annotations, see http://g.co/cloud/vision/docs
                     for (EntityAnnotation annotation : res.getLabelAnnotationsList()) {
                         labels.add(annotation.getDescription());
-                        /*annotation.getAllFields()
-                           .forEach((k, v) -> System.out.format("%s : %s%n", k, v.toString()));*/
                     }
                 }
             }
@@ -87,16 +85,16 @@ public class LabelsApp {
         return labels;
     }
 
-    static List<String> TranslateLabels(List<java.lang.String> labels) {
-        List<java.lang.String> labelsTranslated = null;
+    static List<String> translateLabels(List<String> labels, String translationLang) {
+        List<String> labelsTranslated = null;
         try {
             Translate translateService = TranslateOptions.getDefaultInstance().getService();
             labelsTranslated = new ArrayList<>();
-            for (java.lang.String label : labels) {
+            for (String label : labels) {
                 Translation translation = translateService.translate(
                         label,
                         Translate.TranslateOption.sourceLanguage("en"),
-                        Translate.TranslateOption.targetLanguage("pt"));
+                        Translate.TranslateOption.targetLanguage(translationLang));
                 labelsTranslated.add(translation.getTranslatedText());
             }
         } catch (Exception ex) {
@@ -105,4 +103,6 @@ public class LabelsApp {
             return labelsTranslated;
         }
     }
+
 }
+
