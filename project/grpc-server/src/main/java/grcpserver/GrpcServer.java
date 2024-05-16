@@ -1,6 +1,6 @@
 package grcpserver;
 
-import grcpservices.VisionFlowFunctionalService;
+import grcpserver.services.VisionFlowFunctionalService;
 import io.grpc.ServerBuilder;
 
 public class GrpcServer {

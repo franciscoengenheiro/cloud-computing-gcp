@@ -2,25 +2,25 @@ package grpcclientapp.observers;
 
 import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
-import servicestubs.ImageDownloadData;
-import servicestubs.ImageDownloadedData;
+import servicestubs.DownloadImageRequest;
+import servicestubs.DownloadImageResponse;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class ImageDownloadedStreamObserver implements StreamObserver<ImageDownloadedData> {
+public class DownloadImageResponseStream implements StreamObserver<DownloadImageResponse> {
 
-    private final ImageDownloadData imageDownloadData;
+    private final DownloadImageRequest request;
 
-    public ImageDownloadedStreamObserver(ImageDownloadData imageDownloadData) {
-        this.imageDownloadData = imageDownloadData;
+    public DownloadImageResponseStream(DownloadImageRequest request) {
+        this.request = request;
     }
 
     @Override
-    public void onNext(ImageDownloadedData imageDownloadedData) {
+    public void onNext(DownloadImageResponse downloadImageResponse) {
         try {
-            storeImageLocally(imageDownloadedData, imageDownloadData.getPath());
+            storeImageLocally(downloadImageResponse, request.getPath());
         } catch (IOException e) {
             System.out.println("\nError storing image: " + e.getMessage());
         }
@@ -36,14 +36,17 @@ public class ImageDownloadedStreamObserver implements StreamObserver<ImageDownlo
         System.out.println("\nImage downloaded successfully");
     }
 
-    private static void storeImageLocally(ImageDownloadedData downloadedImage, String directory) throws IOException {
+    private static void storeImageLocally(
+            DownloadImageResponse downloadedImage,
+            String directory
+    ) throws IOException {
         ByteString imageDataBytes = downloadedImage.getData();
         createDirectoryIfNotExists(directory);
         // Write the image data to a file
         // parse the image name from the id (e.g. cat#jpeg -> cat.jpeg)
         String imageNameWithExt = downloadedImage.getName().replace("#", ".");
         String filePath = directory + "/" + imageNameWithExt;
-        System.out.println("Storing image into file: " + filePath);
+        System.out.println("\nStoring image into file: " + filePath);
         try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
             outputStream.write(imageDataBytes.toByteArray());
         }

@@ -1,4 +1,4 @@
-package grcpservices.cloudstorage;
+package grcpserver.services.cloudstorage;
 
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
@@ -18,7 +18,7 @@ public class CloudStorageOperations {
         this.storage = storage;
     }
 
-    public BlobId uploadBlobToBucket(
+    public void uploadBlobToBucket(
             String bucketName,
             String blobName,
             byte[] data,
@@ -40,7 +40,6 @@ public class CloudStorageOperations {
             storage.create(blobInfo, data);
         }
         System.out.println("Created blob <" + blobName + "> in bucket <" + bucketName + ">");
-        return blobId;
     }
 
     public byte[] downloadBlobFromBucket(BlobId blobId) {

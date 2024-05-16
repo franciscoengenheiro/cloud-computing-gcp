@@ -1,4 +1,4 @@
-package grcpservices.labels;
+package grcpserver.services.labels;
 
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.translate.Translate;

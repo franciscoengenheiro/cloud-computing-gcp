@@ -8,33 +8,33 @@ package grpcservice;
 
 service VisionFlowFunctionalService {
   //uploads an image file and returns an id
-  rpc uploadImage(ImageUploadData) returns (ImageUploadedData);
+  rpc uploadImage(stream UploadImageRequest) returns (UploadImageResponse);
   //downloads an image file to a path
-  rpc downloadImage(ImageDownloadData) returns (ImageDownloadedData);
+  rpc downloadImage(DownloadImageRequest) returns (DownloadImageResponse);
   //gets image processing characteristics
-  rpc getImageCharacteristics(ImageId) returns (ImageCharacteristicsData);
+  rpc getImageCharacteristics(GetImageCharacteristicsRequest) returns (GetImageCharacteristicsResponse);
   //gets file names based on image characteristics and date range
-  rpc getFileNamesByCharacteristic(ImageProcessedData) returns (FileNames);
+  rpc getFileNamesByCharacteristic(GetFileNamesRequest) returns (GetFileNamesResponse);
 }
 
 //image file to upload
-message ImageUploadData {
+message UploadImageRequest {
   //image name (e.g. cat)
   string name = 1;
   //image content type (e.g. image/jpeg)
   string contentType = 2;
-  //image bytes to upload
-  bytes data = 3;
+  //image bytes as chunked data
+  bytes chunk = 3;
 }
 
 //image file uploaded
-message ImageUploadedData {
+message UploadImageResponse {
   //image id generated after uploading image file
   string id = 1;
 }
 
 //image file to download
-message ImageDownloadData {
+message DownloadImageRequest {
   //image id generated after uploading image file
   string id = 1;
   //where to place the image file after downloading
@@ -42,20 +42,21 @@ message ImageDownloadData {
 }
 
 //image file downloaded
-message ImageDownloadedData {
+message DownloadImageResponse {
+  //image name
   string name = 1;
   //image id to download
   bytes data = 2;
 }
 
 //request to get image characteristics based on image id
-message ImageId {
+message GetImageCharacteristicsRequest {
   //image id
   string id = 1;
 }
 
 //image processing characteristics
-message ImageCharacteristicsData {
+message GetImageCharacteristicsResponse {
   //list of characteristics found in the image
   repeated string characteristics = 1;
   //list of translations corresponding to the characteristics
@@ -65,7 +66,7 @@ message ImageCharacteristicsData {
 }
 
 //request to get file names based on image characteristics
-message ImageProcessedData {
+message GetFileNamesRequest {
   //characteristic to search for
   string characteristic = 1;
   //start date to search for
@@ -75,7 +76,7 @@ message ImageProcessedData {
 }
 
 //file names found based on image processing characteristics query
-message FileNames {
+message GetFileNamesResponse {
   //list of file names found
   repeated string names = 1;
 }

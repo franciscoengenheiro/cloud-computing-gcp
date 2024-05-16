@@ -1,4 +1,4 @@
-package grcpservices.labels;
+package grcpserver.services.labels;
 
 import java.util.List;
 

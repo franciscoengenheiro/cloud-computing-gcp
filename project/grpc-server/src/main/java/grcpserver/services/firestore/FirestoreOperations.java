@@ -1,4 +1,4 @@
-package grcpservices.firestore;
+package grcpserver.services.firestore;
 
 public class FirestoreOperations {
     // TODO

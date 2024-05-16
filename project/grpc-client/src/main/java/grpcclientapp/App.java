@@ -1,15 +1,19 @@
 package grpcclientapp;
 
-import grpcclientapp.observers.ImageDownloadedStreamObserver;
-import grpcclientapp.observers.ImageUploadedStreamObserver;
+import com.google.protobuf.ByteString;
+import grpcclientapp.observers.DownloadImageResponseStream;
+import grpcclientapp.observers.UploadImageResponseStream;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import servicestubs.*;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
-
-import static grpcclientapp.observers.ImageUploadedStreamObserver.createImageFile;
 
 public class App {
     // generic ClientApp for Calling a grpc Service
@@ -45,20 +49,12 @@ public class App {
                 switch (option) {
                     case 1:
                         String path = read("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
-                        ImageUploadData imageFile = createImageFile(path);
-                        StreamObserver<ImageUploadedData> uploadImageStreamObserver = new ImageUploadedStreamObserver(imageFile);
-                        noBlockingStub.uploadImage(imageFile, uploadImageStreamObserver);
+                        uploadImage(path);
                         break;
                     case 2:
                         String id = read("Enter the image id to download (e.g., gs://lab3-bucket-g04-europe/cat#jpeg): ");
                         String dirToDownloadTo = read("Enter the directory to download the image to (e.g., project/grpc-client/downloaded-imgs): ");
-                        ImageDownloadData imageDownloadData = ImageDownloadData.newBuilder()
-                                .setId(id)
-                                .setPath(dirToDownloadTo)
-                                .build();
-                        StreamObserver<ImageDownloadedData> downloadImageStreamObserver
-                                = new ImageDownloadedStreamObserver(imageDownloadData);
-                        noBlockingStub.downloadImage(imageDownloadData, downloadImageStreamObserver);
+                        downloadImage(id, dirToDownloadTo);
                         break;
                     case 0:
                         System.out.println("Exiting...");
@@ -76,6 +72,48 @@ public class App {
         Scanner input = new Scanner(System.in);
         System.out.print(msg);
         return input.nextLine().trim();
+    }
+
+    private static void uploadImage(String imagePath) throws IOException {
+        StreamObserver<UploadImageResponse> responseStream = new UploadImageResponseStream();
+        StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingStub.uploadImage(responseStream);
+        // Read bytes from file and send to server
+        final Path path = Paths.get(imagePath);
+        // parse path to get file name (e.g. /path/to/image.jpg -> image)
+        final String fileName = path.getFileName().toString().split("\\.")[0];
+        // get content type of the image (e.g. image/jpeg)
+        final String contentType = Files.probeContentType(path);
+
+        // Define buffer size for reading chunks (e.g., 4 KB)
+        final int bufferSize = 4096;
+        final byte[] buffer = new byte[bufferSize];
+
+        try (InputStream inputStream = Files.newInputStream(path)) {
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                ByteString chunk = ByteString.copyFrom(buffer, 0, bytesRead);
+                UploadImageRequest imageUploadData = UploadImageRequest.newBuilder()
+                        .setName(fileName)
+                        .setContentType(contentType)
+                        .setChunk(chunk)
+                        .build();
+                streamToAddImageBytes.onNext(imageUploadData);
+                System.out.println("Sent chunk of image data");
+            }
+        } catch (IOException e) {
+            // Handle IO exception
+            e.printStackTrace();
+        }
+        streamToAddImageBytes.onCompleted();
+    }
+
+    private static void downloadImage(String id, String dirToDownloadTo) {
+        DownloadImageRequest imageDownloadData = DownloadImageRequest.newBuilder()
+                .setId(id)
+                .setPath(dirToDownloadTo)
+                .build();
+        StreamObserver<DownloadImageResponse> responseStream = new DownloadImageResponseStream(imageDownloadData);
+        noBlockingStub.downloadImage(imageDownloadData, responseStream);
     }
 
 }

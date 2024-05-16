@@ -1,4 +1,4 @@
-package grcpservices.labels;
+package grcpserver.services.labels;
 
 public record PubSubImageMessage(
         String id,
