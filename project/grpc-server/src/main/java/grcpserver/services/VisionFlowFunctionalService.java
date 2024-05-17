@@ -4,6 +4,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
+import grcpserver.services.cloudpubsub.CloudPubSubOperations;
 import grcpserver.services.cloudstorage.CloudStorageOperations;
 import io.grpc.stub.StreamObserver;
 import servicestubs.*;
@@ -57,6 +58,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
             @Override
             public void onCompleted() {
+                final String translationLanguage = "en";
                 System.out.println("Uploading image to bucket");
                 // parse extension from content type (e.g. image/jpeg -> jpeg)
                 String extension = contentType.split("/")[1];
@@ -73,6 +75,10 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                             .build();
                     responseObserver.onNext(response);
                     responseObserver.onCompleted();
+
+                    CloudPubSubOperations cloudPubSubOperations = new CloudPubSubOperations();
+                    cloudPubSubOperations.publishMessage(imageName, bucketName, blobName, translationLanguage);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

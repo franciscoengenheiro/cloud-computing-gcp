@@ -46,8 +46,15 @@ public class PubSubClient {
 
     // Menu options
     public static void listTopics() throws IOException {
+        System.out.println("List Topics");
         TopicAdminClient topicAdmin = TopicAdminClient.create();
+        System.out.println("ASDSADASDASDASDAS");
+        System.out.println("PROJECT_ID=" + PROJECT_ID);
         TopicAdminClient.ListTopicsPagedResponse res = topicAdmin.listTopics(ProjectName.of(PROJECT_ID));
+        TopicName tName = TopicName.ofProjectTopicName(PROJECT_ID, "vision-flow-topic");
+        System.out.println("Topic Name=" + tName);
+
+
         for (Topic top : res.iterateAll()) {
             System.out.println("Topic Name=" + top.getName());
         }
@@ -67,9 +74,9 @@ public class PubSubClient {
         Publisher publisher = Publisher.newBuilder(topicName).build();
         ByteString msgData = ByteString.copyFromUtf8(msg);
         PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
-            .setData(msgData)
-            .putAttributes("key1", "value1")
-            .build();
+                .setData(msgData)
+                .putAttributes("key1", "value1")
+                .build();
         ApiFuture<String> future = publisher.publish(pubsubMessage);
         String msgID = future.get();
         System.out.println("Message Published with ID=" + msgID);
@@ -82,8 +89,8 @@ public class PubSubClient {
         for (int i = 0; i < numMsg; i++) {
             ByteString msgData = ByteString.copyFromUtf8("Multiple:" + msgPrefix + (i + 1));
             PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
-                .setData(msgData)
-                .build();
+                    .setData(msgData)
+                    .build();
             ApiFuture<String> future = publisher.publish(pubsubMessage);
             String msgID = future.get();
             System.out.println("Message Published with ID=" + msgID);
@@ -104,7 +111,7 @@ public class PubSubClient {
     public static void createSubscription(String topicID, String subscriptionID) throws IOException {
         TopicName topicName = TopicName.of(PROJECT_ID, topicID);
         SubscriptionName subscriptionName = SubscriptionName.of(
-            PROJECT_ID, subscriptionID);
+                PROJECT_ID, subscriptionID);
         SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create();
         PushConfig pConfig = PushConfig.getDefaultInstance();
         subscriptionAdminClient.createSubscription(subscriptionName, topicName, pConfig, 0);
@@ -113,15 +120,15 @@ public class PubSubClient {
 
     public static Subscriber subscribeMessages(String projectID, String subscriptionID) {
         ProjectSubscriptionName projSubscriptionName = ProjectSubscriptionName.of(
-            projectID, subscriptionID);
+                projectID, subscriptionID);
         ExecutorProvider executorProvider = InstantiatingExecutorProvider
                 .newBuilder()
                 .setExecutorThreadCount(1) // um só thread no handler
                 .build();
         Subscriber subscriber =
-            Subscriber.newBuilder(projSubscriptionName, new googlepubsub.MessageReceiveHandler())
-			    .setExecutorProvider(executorProvider)
-                .build();
+                Subscriber.newBuilder(projSubscriptionName, new googlepubsub.MessageReceiveHandler())
+                        .setExecutorProvider(executorProvider)
+                        .build();
         subscriber.startAsync().awaitRunning();
         return subscriber;
     }
@@ -131,12 +138,7 @@ public class PubSubClient {
         //     GOOGLE_APPLICATION_CREDENTIALS="pathname to AccountServiceKEY.json"
         // - set project_id as a command line argument
         try {
-            if (args.length > 0)
-                PROJECT_ID = args[0];
-            else {
-                System.out.println("Pass project id as a command line argument");
-                System.exit(-1);
-            }
+            PROJECT_ID = "cn2324-t1-g04";
             System.out.println("ProjectID = " + PROJECT_ID);
             Subscriber subscriber = null;
             Scanner scanInput = new Scanner(System.in);

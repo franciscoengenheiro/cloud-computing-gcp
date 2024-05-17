@@ -23,6 +23,7 @@ public class GrpcServer {
             // Waits for the server to become terminated
             svc.awaitTermination();
         } catch (Exception ex) {
+
             ex.printStackTrace();
         }
     }
