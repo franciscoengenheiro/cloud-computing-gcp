@@ -8,8 +8,11 @@ import com.google.cloud.storage.Storage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
 
 public class CloudStorageOperations {
+
+    private final Logger logger = Logger.getLogger(CloudStorageOperations.class.getName());
 
     Storage storage;
     int ONE_MB = 1024 * 1024;
@@ -39,10 +42,11 @@ public class CloudStorageOperations {
             // create the blob in one request.
             storage.create(blobInfo, data);
         }
-        System.out.println("Created blob <" + blobName + "> in bucket <" + bucketName + ">");
+        logger.info("Created blob <" + blobName + "> in bucket <" + bucketName + ">");
     }
 
     public byte[] downloadBlobFromBucket(BlobId blobId) {
+        logger.info("Downloading blob with id: " + blobId);
         Blob blob = storage.get(blobId);
         return blob.getContent();
     }

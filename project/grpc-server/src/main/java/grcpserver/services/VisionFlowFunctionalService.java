@@ -6,26 +6,32 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
 import grcpserver.services.cloudpubsub.CloudPubSubOperations;
 import grcpserver.services.cloudstorage.CloudStorageOperations;
+import grcpserver.services.firestore.FirestoreOperations;
+import grcpserver.services.firestore.ProcessedImageData;
 import io.grpc.stub.StreamObserver;
 import servicestubs.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceImplBase {
     private final String bucketName = "lab3-bucket-g04-europe";
     private final CloudStorageOperations cloudStorageOperations;
     private final CloudPubSubOperations cloudPubSubOperations;
+    private final FirestoreOperations firestoreOperations;
+    private final Logger logger = Logger.getLogger(VisionFlowFunctionalService.class.getName());
 
     public VisionFlowFunctionalService() {
         StorageOptions storageOperations = StorageOptions.getDefaultInstance();
         Storage storage = storageOperations.getService();
         String projectId = storageOperations.getProjectId();
         Objects.requireNonNull(projectId, "GOOGLE_APPLICATION_CREDENTIALS environment variable not set");
-        System.out.println("Connected to storage for project: " + projectId);
+        logger.info("Connected to project: " + projectId);
         this.cloudStorageOperations = new CloudStorageOperations(storage);
         this.cloudPubSubOperations = new CloudPubSubOperations(projectId);
+        this.firestoreOperations = new FirestoreOperations(storage.getOptions().getCredentials());
     }
 
     @Override
@@ -39,8 +45,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
             @Override
             public void onNext(UploadImageRequest request) {
-                // concatenate received chunks of image data
-                System.out.println("[Server] Received chunk of image data");
+                // on the first request, get all the metadata
                 if (contentType == null) {
                     contentType = request.getContentType();
                     imageName = request.getName();
@@ -56,12 +61,12 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
             @Override
             public void onError(Throwable throwable) {
-                System.out.println("Error uploading image to server");
+                logger.severe("Error uploading image: " + throwable.getMessage());
+                responseObserver.onError(throwable);
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("Uploading image to bucket");
                 // parse extension from content type (e.g. image/jpeg -> jpeg)
                 String extension = contentType.split("/")[1];
                 // create the blob name by concatenating the image name and the extension (e.g. cat#jpeg),
@@ -71,15 +76,12 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                 byte[] imageData = outputStream.toByteArray();
                 try {
                     cloudStorageOperations.uploadBlobToBucket(bucketName, blobName, imageData, contentType);
-                    BlobId id = BlobId.of(bucketName, blobName);
-                    String requestId = id.toGsUtilUri();
                     UploadImageResponse response = UploadImageResponse.newBuilder()
-                            .setId(requestId)
+                            .setId(blobName)
                             .build();
                     responseObserver.onNext(response);
                     responseObserver.onCompleted();
-
-                    cloudPubSubOperations.publishMessage(requestId, imageName, bucketName, blobName, translationLang);
+                    cloudPubSubOperations.publishMessage(blobName, imageName, bucketName, blobName, translationLang);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -90,13 +92,31 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
     @Override
     public void downloadImage(DownloadImageRequest request, StreamObserver<DownloadImageResponse> responseObserver) {
-        System.out.println("Downloading image from bucket");
-        BlobId blobId = BlobId.fromGsUtilUri(request.getId());
+        BlobId blobId = BlobId.of(bucketName, request.getId());
         try {
             byte[] imageBytes = cloudStorageOperations.downloadBlobFromBucket(blobId);
             DownloadImageResponse response = DownloadImageResponse.newBuilder()
                     .setData(ByteString.copyFrom(imageBytes))
                     .setName(blobId.getName())
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void getImageCharacteristics(
+            GetImageCharacteristicsRequest request,
+            StreamObserver<GetImageCharacteristicsResponse> responseObserver
+    ) {
+        try {
+            ProcessedImageData processedImageData = firestoreOperations.getImageCharacteristcs(request.getId());
+            GetImageCharacteristicsResponse response = GetImageCharacteristicsResponse.newBuilder()
+                    .setDate(processedImageData.getTimestamp())
+                    .addAllLabels(processedImageData.getLabels())
+                    .addAllTranslations(processedImageData.getTranslatedLabels())
                     .build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();

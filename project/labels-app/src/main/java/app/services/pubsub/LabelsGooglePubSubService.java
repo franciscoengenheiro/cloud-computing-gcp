@@ -1,5 +1,6 @@
-package app;
+package app.services.pubsub;
 
+import app.receiver.LabelsMessageHandlerFunction;
 import app.receiver.LabelsMessageReceiveHandler;
 
 public class LabelsGooglePubSubService {

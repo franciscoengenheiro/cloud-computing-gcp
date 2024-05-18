@@ -2,6 +2,7 @@ package grpcclientapp;
 
 import com.google.protobuf.ByteString;
 import grpcclientapp.observers.DownloadImageResponseStream;
+import grpcclientapp.observers.GetImageCharacteristicsResponseStream;
 import grpcclientapp.observers.UploadImageResponseStream;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -14,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 public class App {
     // generic ClientApp for Calling a grpc Service
@@ -21,6 +23,7 @@ public class App {
     private static int svcPort = 8000;
     private static ManagedChannel channel;
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingStub;
+    private static final Logger logger = Logger.getLogger(App.class.getName());
 
     public static void main(String[] args) {
         try {
@@ -28,7 +31,7 @@ public class App {
                 svcIP = args[0];
                 svcPort = Integer.parseInt(args[1]);
             }
-            System.out.println("connect to " + svcIP + ":" + svcPort);
+            logger.info("connect to " + svcIP + ":" + svcPort);
             channel = ManagedChannelBuilder.forAddress(svcIP, svcPort)
                     // Channels are secure by default (via SSL/TLS).
                     // For the example we disable TLS to avoid
@@ -41,6 +44,7 @@ public class App {
                 System.out.println("\n######## MENU ##########");
                 System.out.println("1: Upload Image");
                 System.out.println("2: Download Image");
+                System.out.println("3: Get Image Characteristics");
                 System.out.println("0: Exit");
                 System.out.println("########################");
                 System.out.print("Enter an Option: ");
@@ -49,13 +53,17 @@ public class App {
                 switch (option) {
                     case 1:
                         String path = read("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
-                        String translationlang = read("Enter the language to translate the image to (e.g., pt): ");
+                        String translationlang = read("Enter the language to translate the image to (e.g., pt, fr, es): ");
                         uploadImage(path, translationlang);
                         break;
                     case 2:
-                        String id = read("Enter the image id to download (e.g., gs://lab3-bucket-g04-europe/cat#jpeg): ");
+                        String idToDownload = read("Enter the image id to download (e.g., cat#jpeg): ");
                         String dirToDownloadTo = read("Enter the directory to download the image to (e.g., project/grpc-client/downloaded-imgs): ");
-                        downloadImage(id, dirToDownloadTo);
+                        downloadImage(idToDownload, dirToDownloadTo);
+                        break;
+                    case 3:
+                        String id = read("Enter the image id to get characteristics (e.g., cat#jpeg): ");
+                        getImageCharacteristcs(id);
                         break;
                     case 0:
                         System.out.println("Exiting...");
@@ -67,6 +75,15 @@ public class App {
         } catch (Exception e) {
             System.out.println("An error occurred" + e);
         }
+    }
+
+    private static void getImageCharacteristcs(String id) {
+        GetImageCharacteristicsRequest request = GetImageCharacteristicsRequest.newBuilder()
+                .setId(id)
+                .build();
+        StreamObserver<GetImageCharacteristicsResponse> responseStream =
+                new GetImageCharacteristicsResponseStream();
+        noBlockingStub.getImageCharacteristics(request, responseStream);
     }
 
     private static String read(String msg) {
@@ -99,7 +116,6 @@ public class App {
                         .setChunk(chunk)
                         .build();
                 streamToAddImageBytes.onNext(imageUploadData);
-                System.out.println("Sent chunk of image data");
             }
         } catch (IOException e) {
             // Handle IO exception

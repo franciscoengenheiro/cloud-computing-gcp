@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option java_multiple_files = true;
 option java_package = "servicestubs";
-import "google/protobuf/timestamp.proto";
 
 package grpcservice;
 
@@ -59,12 +58,12 @@ message GetImageCharacteristicsRequest {
 
 //image processing characteristics
 message GetImageCharacteristicsResponse {
-  //list of characteristics found in the image
-  repeated string characteristics = 1;
+  //list of labels found in the image
+  repeated string labels = 1;
   //list of translations corresponding to the characteristics
   repeated string translations = 2;
   //date the image was processed
-  google.protobuf.Timestamp date = 3;
+  string date = 3;
 }
 
 //request to get file names based on image characteristics
@@ -72,9 +71,9 @@ message GetFileNamesRequest {
   //characteristic to search for
   string characteristic = 1;
   //start date to search for
-  google.protobuf.Timestamp startDate = 2;
+  string startDate = 2;
   //end date to search for
-  google.protobuf.Timestamp endDate = 3;
+  string endDate = 3;
 }
 
 //file names found based on image processing characteristics query

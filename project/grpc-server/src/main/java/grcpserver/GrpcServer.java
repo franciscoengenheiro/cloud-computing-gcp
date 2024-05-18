@@ -3,8 +3,11 @@ package grcpserver;
 import grcpserver.services.VisionFlowFunctionalService;
 import io.grpc.ServerBuilder;
 
+import java.util.logging.Logger;
+
 public class GrpcServer {
     private static int svcPort = 8000;
+    private static Logger logger = Logger.getLogger(GrpcServer.class.getName());
 
     public static void main(String[] args) {
         try {
@@ -16,7 +19,7 @@ public class GrpcServer {
                     // TODO: add more services here
                     .build();
             svc.start();
-            System.out.println("Server started on port " + svcPort);
+            logger.info("Server started, listening on " + svcPort);
             // Java virtual machine shutdown hook
             // to capture normal or abnormal exits
             Runtime.getRuntime().addShutdownHook(new ShutdownHook(svc));
