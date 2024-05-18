@@ -19,13 +19,14 @@ public class CloudPubSubOperations {
     public CloudPubSubOperations() {
     }
 
-    public void publishMessage(String requestId, String bucket_name, String blobName, String translation) {
+    public void publishMessage(String requestId, String imageName, String bucket_name, String blobName, String translation) {
         TopicName topicName = TopicName.ofProjectTopicName(PROJECT_ID, TOPIC_ID);
         System.out.println("Topic Name=" + topicName);
         try {
             Publisher publisher = Publisher.newBuilder(topicName).build();
             PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
                     .putAttributes("request_id", requestId)
+                    .putAttributes("image_name", imageName)
                     .putAttributes("bucket_name", bucket_name)
                     .putAttributes("blob_name", blobName)
                     .putAttributes("translation", translation)
@@ -36,7 +37,6 @@ public class CloudPubSubOperations {
 
             String msgID = future.get();
             System.out.println("Message Published with ID=" + msgID);
-
 
             publisher.shutdown();
         } catch (Exception e) {

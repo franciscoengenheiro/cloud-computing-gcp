@@ -48,7 +48,6 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                 } catch (IOException e) {
                     onError(e);
                 }
-
             }
 
             @Override
@@ -58,7 +57,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
             @Override
             public void onCompleted() {
-                final String translationLanguage = "en";
+                final String translationLanguage = "pt";    //TODO: get from client
                 System.out.println("Uploading image to bucket");
                 // parse extension from content type (e.g. image/jpeg -> jpeg)
                 String extension = contentType.split("/")[1];
@@ -70,19 +69,19 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                 try {
                     cloudStorageOperations.uploadBlobToBucket(bucketName, blobName, imageData, contentType);
                     BlobId id = BlobId.of(bucketName, blobName);
+                    String requestId = id.toGsUtilUri();
                     UploadImageResponse response = UploadImageResponse.newBuilder()
-                            .setId(id.toGsUtilUri())
+                            .setId(requestId)
                             .build();
                     responseObserver.onNext(response);
                     responseObserver.onCompleted();
 
                     CloudPubSubOperations cloudPubSubOperations = new CloudPubSubOperations();
-                    cloudPubSubOperations.publishMessage(imageName, bucketName, blobName, translationLanguage);
+                    cloudPubSubOperations.publishMessage(requestId, imageName, bucketName, blobName, translationLanguage);
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
         };
     }

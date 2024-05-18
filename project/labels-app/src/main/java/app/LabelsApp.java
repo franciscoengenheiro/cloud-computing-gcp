@@ -9,46 +9,44 @@ import com.google.cloud.vision.v1.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class LabelsApp {
+    private static final Logger logger = Logger.getLogger(LabelsApp.class.getName());
 
     public static void main(String[] args) {
-        // Assume:
-        // - Vision API enabled no projeto GCP
-        // - A variável de ambiente GOOGLE_APPLICATION_CREDENTIALS com uma chave de uma
-        //   conta de serviço com roles "VisionAI Admin" e "Storage Admin"
-        // - A API Translate não necessita de Role especifica, funcionando
-        //    com qualquer chave válida numa conta de serviço do projeto GCP
+        LabelsGooglePubSubService labelsPubSubService = new LabelsGooglePubSubService(new GooglePubSub());
+        String PROJECT_ID = "cn2324-t1-g04";
+        String SUBSCRIPTION_ID = "labelsApp";
         // TODO: should be on loop to check for new messages
-        try {
-            // TODO: this app should activily check subscription messages in a pre determined topic
-
-            PubSubImageMessage imageMessage = new PubSubImageMessage(
-                    "1",
-                    "bucketName",
-                    "blobName",
-                    "en"
-            );
-            // create blob id from bucket name and blob name
-            BlobId blobId = BlobId.of(imageMessage.getBucketName(), imageMessage.getBlobName());
-            // detect labels in pictures
-            List<String> labels = detectLabels(blobId.toGsUtilUri());
-            // translate labels to a specific language
-            List<String> labelsTranslated = translateLabels(labels, imageMessage.getTranslationLang());
-            // save processed image in a data structure
-            ProcessedImageData processedImageData = new ProcessedImageData(
-                    imageMessage.getId(),
-                    labels,
-                    labelsTranslated,
-                    imageMessage.getTranslationLang()
-            );
-            // save processed image in a database
-            // TODO: firestore should have a predefined schema for processed images
-            //  and a specific collection for them, logging app will use another collection
-            // firestoreOperations.saveImage(processedImage);
-        } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
-        }
+        labelsPubSubService.subscribe(PROJECT_ID, SUBSCRIPTION_ID,
+                (String requestId, String imageName, String timestamp, String bucketName, String blobName, String translationLang) -> {
+                    try {
+                        logger.info("Request ID: " + requestId);
+                        // create blob id from bucket name and blob name
+                        BlobId blobId = BlobId.of(bucketName, blobName);
+                        // detect labels in pictures
+                        List<String> labels = detectLabels(blobId.toGsUtilUri());
+                        logger.info("Labels detected: " + labels);
+                        // translate labels to a specific language
+                        List<String> labelsTranslated = translateLabels(labels, translationLang);
+                        logger.info("Labels translated: " + labelsTranslated);
+                        // save processed image in a data structure
+                        ProcessedImageData processedImageData = new ProcessedImageData(
+                                requestId,
+                                labels,
+                                labelsTranslated,
+                                translationLang
+                        );
+                        // save processed image in a database
+                        // TODO:firestore should have a predefined schema for processed images
+                        //  and a specific collection for them, logging app will use another collection
+                        // firestoreOperations.saveImage(processedImage);
+                    } catch (Exception ex) {
+                        System.out.println("Error: " + ex.getMessage());
+                    }
+                }
+        );
     }
 
     public static List<String> detectLabels(String gsURI) throws IOException {
