@@ -16,6 +16,7 @@ import java.util.Objects;
 public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceImplBase {
     private final String bucketName = "lab3-bucket-g04-europe";
     private final CloudStorageOperations cloudStorageOperations;
+    private final CloudPubSubOperations cloudPubSubOperations;
 
     public VisionFlowFunctionalService() {
         StorageOptions storageOperations = StorageOptions.getDefaultInstance();
@@ -24,6 +25,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
         Objects.requireNonNull(projectId, "GOOGLE_APPLICATION_CREDENTIALS environment variable not set");
         System.out.println("Connected to storage for project: " + projectId);
         this.cloudStorageOperations = new CloudStorageOperations(storage);
+        this.cloudPubSubOperations = new CloudPubSubOperations(projectId);
     }
 
     @Override
@@ -33,6 +35,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); // To accumulate image bytes
             String contentType;
             String imageName;
+            String translationLang;
 
             @Override
             public void onNext(UploadImageRequest request) {
@@ -41,6 +44,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                 if (contentType == null) {
                     contentType = request.getContentType();
                     imageName = request.getName();
+                    translationLang = request.getTranslationLang();
                 }
                 byte[] chunk = request.getChunk().toByteArray();
                 try {
@@ -57,7 +61,6 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
             @Override
             public void onCompleted() {
-                final String translationLanguage = "pt";    //TODO: get from client
                 System.out.println("Uploading image to bucket");
                 // parse extension from content type (e.g. image/jpeg -> jpeg)
                 String extension = contentType.split("/")[1];
@@ -76,8 +79,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                     responseObserver.onNext(response);
                     responseObserver.onCompleted();
 
-                    CloudPubSubOperations cloudPubSubOperations = new CloudPubSubOperations();
-                    cloudPubSubOperations.publishMessage(requestId, imageName, bucketName, blobName, translationLanguage);
+                    cloudPubSubOperations.publishMessage(requestId, imageName, bucketName, blobName, translationLang);
 
                 } catch (Exception e) {
                     e.printStackTrace();

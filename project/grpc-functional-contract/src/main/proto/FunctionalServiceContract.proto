@@ -25,6 +25,8 @@ message UploadImageRequest {
   string contentType = 2;
   //image bytes as chunked data
   bytes chunk = 3;
+  //image translation (e.g. "pt" for Portuguese)
+  string translationLang = 4;
 }
 
 //image file uploaded

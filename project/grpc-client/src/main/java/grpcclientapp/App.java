@@ -49,7 +49,8 @@ public class App {
                 switch (option) {
                     case 1:
                         String path = read("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
-                        uploadImage(path);
+                        String translationlang = read("Enter the language to translate the image to (e.g., pt): ");
+                        uploadImage(path, translationlang);
                         break;
                     case 2:
                         String id = read("Enter the image id to download (e.g., gs://lab3-bucket-g04-europe/cat#jpeg): ");
@@ -74,7 +75,7 @@ public class App {
         return input.nextLine().trim();
     }
 
-    private static void uploadImage(String imagePath) throws IOException {
+    private static void uploadImage(String imagePath, String translationlang) throws IOException {
         StreamObserver<UploadImageResponse> responseStream = new UploadImageResponseStream();
         StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingStub.uploadImage(responseStream);
         // Read bytes from file and send to server
@@ -83,7 +84,6 @@ public class App {
         final String fileName = path.getFileName().toString().split("\\.")[0];
         // get content type of the image (e.g. image/jpeg)
         final String contentType = Files.probeContentType(path);
-
         // Define buffer size for reading chunks (e.g., 4 KB)
         final int bufferSize = 4096;
         final byte[] buffer = new byte[bufferSize];
@@ -95,6 +95,7 @@ public class App {
                 UploadImageRequest imageUploadData = UploadImageRequest.newBuilder()
                         .setName(fileName)
                         .setContentType(contentType)
+                        .setTranslationLang(translationlang)
                         .setChunk(chunk)
                         .build();
                 streamToAddImageBytes.onNext(imageUploadData);
