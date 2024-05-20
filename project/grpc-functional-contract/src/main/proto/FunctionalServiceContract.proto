@@ -48,6 +48,8 @@ message DownloadImageResponse {
   string name = 1;
   //image id to download
   bytes data = 2;
+  //image content type
+  string contentType = 3;
 }
 
 //request to get image characteristics based on image id

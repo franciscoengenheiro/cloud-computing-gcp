@@ -6,6 +6,7 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
 import grcpserver.services.cloudpubsub.CloudPubSubOperations;
 import grcpserver.services.cloudstorage.CloudStorageOperations;
+import grcpserver.services.cloudstorage.DownloadedBlobData;
 import grcpserver.services.firestore.FirestoreOperations;
 import grcpserver.services.firestore.ProcessedImageData;
 import io.grpc.stub.StreamObserver;
@@ -14,6 +15,7 @@ import servicestubs.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceImplBase {
@@ -67,11 +69,8 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
             @Override
             public void onCompleted() {
-                // parse extension from content type (e.g. image/jpeg -> jpeg)
-                String extension = contentType.split("/")[1];
-                // create the blob name by concatenating the image name and the extension (e.g. cat#jpeg),
-                // because blob name cant be used with "."
-                String blobName = imageName + "#" + extension;
+                UUID requestId = UUID.randomUUID();
+                String blobName = imageName + "#" + requestId;
                 // All image bytes have been received, get the accumulated image bytes
                 byte[] imageData = outputStream.toByteArray();
                 try {
@@ -92,12 +91,14 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
     @Override
     public void downloadImage(DownloadImageRequest request, StreamObserver<DownloadImageResponse> responseObserver) {
+        // parse request id by # to get the blob name
         BlobId blobId = BlobId.of(bucketName, request.getId());
         try {
-            byte[] imageBytes = cloudStorageOperations.downloadBlobFromBucket(blobId);
+            DownloadedBlobData downloadBlobData = cloudStorageOperations.downloadBlobFromBucket(blobId);
             DownloadImageResponse response = DownloadImageResponse.newBuilder()
-                    .setData(ByteString.copyFrom(imageBytes))
-                    .setName(blobId.getName())
+                    .setData(ByteString.copyFrom(downloadBlobData.getData()))
+                    .setContentType(downloadBlobData.getContentType())
+                    .setName(request.getId().split("#")[0])
                     .build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
@@ -112,7 +113,8 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             StreamObserver<GetImageCharacteristicsResponse> responseObserver
     ) {
         try {
-            ProcessedImageData processedImageData = firestoreOperations.getImageCharacteristcs(request.getId());
+            String id = request.getId();
+            ProcessedImageData processedImageData = firestoreOperations.getImageCharacteristics(id);
             GetImageCharacteristicsResponse response = GetImageCharacteristicsResponse.newBuilder()
                     .setDate(processedImageData.getTimestamp())
                     .addAllLabels(processedImageData.getLabels())

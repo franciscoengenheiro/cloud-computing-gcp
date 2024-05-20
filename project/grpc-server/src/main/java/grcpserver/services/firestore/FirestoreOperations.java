@@ -23,7 +23,7 @@ public class FirestoreOperations {
         db = options.getService();
     }
 
-    public ProcessedImageData getImageCharacteristcs(String id) throws ExecutionException, InterruptedException {
+    public ProcessedImageData getImageCharacteristics(String id) throws ExecutionException, InterruptedException {
         // download image from Firestore
         logger.info("Downloading image from Firestore");
         // not waiting for the result

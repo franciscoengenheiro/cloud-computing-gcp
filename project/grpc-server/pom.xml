@@ -55,7 +55,7 @@
                     </descriptors>
                     <archive>
                         <manifest>
-                            <mainClass>grcpserver.services.labels.LabelsApp</mainClass>
+                            <mainClass>grcpserver.services.labels.LoggingApp</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

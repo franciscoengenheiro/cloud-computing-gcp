@@ -35,7 +35,7 @@ public class DownloadImageResponseStream implements StreamObserver<DownloadImage
 
     @Override
     public void onCompleted() {
-        System.out.println("\nImage downloaded successfully");
+        logger.info("Image downloaded successfully");
     }
 
     private static void storeImageLocally(
@@ -45,9 +45,12 @@ public class DownloadImageResponseStream implements StreamObserver<DownloadImage
         ByteString imageDataBytes = downloadedImage.getData();
         createDirectoryIfNotExists(directory);
         // Write the image data to a file
-        // parse the image name from the id (e.g. cat#jpeg -> cat.jpeg)
-        String imageNameWithExt = downloadedImage.getName().replace("#", ".");
-        String filePath = directory + "/" + imageNameWithExt;
+        System.out.println(downloadedImage.getName());
+        System.out.println(downloadedImage.getContentType());
+        // getContentType() returns the file extension (e.g., "image.jpeg")
+        String contentType = downloadedImage.getContentType().split("/")[1];
+        String filePath = directory + "/" + downloadedImage.getName() + "." + contentType;
+        System.out.println("Storing image at: " + filePath);
         try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
             outputStream.write(imageDataBytes.toByteArray());
         }

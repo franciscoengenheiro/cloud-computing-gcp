@@ -57,12 +57,12 @@ public class App {
                         uploadImage(path, translationlang);
                         break;
                     case 2:
-                        String idToDownload = read("Enter the image id to download (e.g., cat#jpeg): ");
+                        String idToDownload = read("Enter the image id to download (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
                         String dirToDownloadTo = read("Enter the directory to download the image to (e.g., project/grpc-client/downloaded-imgs): ");
                         downloadImage(idToDownload, dirToDownloadTo);
                         break;
                     case 3:
-                        String id = read("Enter the image id to get characteristics (e.g., cat#jpeg): ");
+                        String id = read("Enter the image id to get characteristics (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
                         getImageCharacteristcs(id);
                         break;
                     case 0:

@@ -45,9 +45,10 @@ public class CloudStorageOperations {
         logger.info("Created blob <" + blobName + "> in bucket <" + bucketName + ">");
     }
 
-    public byte[] downloadBlobFromBucket(BlobId blobId) {
+    public DownloadedBlobData downloadBlobFromBucket(BlobId blobId) {
         logger.info("Downloading blob with id: " + blobId);
         Blob blob = storage.get(blobId);
-        return blob.getContent();
+        byte[] data = blob.getContent();
+        return new DownloadedBlobData(data, blob.getContentType());
     }
 }
