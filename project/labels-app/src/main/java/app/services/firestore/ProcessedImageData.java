@@ -1,5 +1,7 @@
 package app.services.firestore;
 
+import com.google.cloud.Timestamp;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -7,7 +9,7 @@ public class ProcessedImageData {
     private final String id;
     private final String name;
     private final String translationLang;
-    private final String timestamp;
+    private final Timestamp timestamp;
     private final List<String> labels;
     private final List<String> translatedLabels;
 
@@ -21,14 +23,14 @@ public class ProcessedImageData {
         this.labels = labels;
         this.translatedLabels = translatedLabels;
         this.translationLang = translationLang;
-        this.timestamp = LocalDateTime.now().toString();
+        this.timestamp = Timestamp.now();
     }
 
     public String getName() {
         return name;
     }
 
-    public String getTimestamp() {
+    public Timestamp getTimestamp() {
         return timestamp;
     }
 

@@ -1,12 +1,14 @@
 package grcpserver.services.firestore;
 
+import com.google.cloud.Timestamp;
+
 import java.util.List;
 
 public class ProcessedImageData {
     private String id;
     private String name;
     private String translationLang;
-    private String timestamp;
+    private Timestamp timestamp;
     private List<String> labels;
     private List<String> translatedLabels;
 
@@ -16,7 +18,7 @@ public class ProcessedImageData {
         this.labels = null;
         this.translatedLabels = null;
         this.translationLang = "";
-        this.timestamp = "";
+        this.timestamp = null;
     }
 
     public ProcessedImageData(String id,
@@ -24,7 +26,7 @@ public class ProcessedImageData {
                               List<String> labels,
                               List<String> translatedLabels,
                               String translationLang,
-                              String timestamp) {
+                              Timestamp timestamp) {
         this.id = id;
         this.name = name;
         this.labels = labels;
@@ -37,7 +39,7 @@ public class ProcessedImageData {
         return name;
     }
 
-    public String getTimestamp() {
+    public Timestamp getTimestamp() {
         return timestamp;
     }
 

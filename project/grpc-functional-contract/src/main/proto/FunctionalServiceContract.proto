@@ -1,5 +1,4 @@
 syntax = "proto3";
-
 option java_multiple_files = true;
 option java_package = "servicestubs";
 
@@ -74,7 +73,7 @@ message GetFileNamesRequest {
   //start date to search for
   string startDate = 1;
   //end date to search for
-  string endDate = 2;
+  string  endDate = 2;
   //characteristic to search for
   string characteristic = 3;
 }

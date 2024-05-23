@@ -1,5 +1,6 @@
 package grcpserver.services;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
@@ -120,7 +121,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             String id = request.getId();
             ProcessedImageData processedImageData = firestoreOperations.getImageCharacteristics(id);
             GetImageCharacteristicsResponse response = GetImageCharacteristicsResponse.newBuilder()
-                    .setDate(processedImageData.getTimestamp())
+                    .setDate(processedImageData.getTimestamp().toString())
                     .addAllLabels(processedImageData.getLabels())
                     .addAllTranslations(processedImageData.getTranslatedLabels())
                     .build();
@@ -140,7 +141,6 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
             Date startDate = formatter.parse(request.getStartDate());
             Date endDate = formatter.parse(request.getEndDate());
-
             String characteristic = request.getCharacteristic();
             List<ProcessedImageData> processedImageDataList = firestoreOperations.getImagesByDateAndCharacteristic(startDate, endDate, characteristic);
             GetFileNamesResponse.Builder responseBuilder = GetFileNamesResponse.newBuilder();

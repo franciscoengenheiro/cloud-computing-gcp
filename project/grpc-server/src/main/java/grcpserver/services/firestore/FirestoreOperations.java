@@ -45,10 +45,9 @@ public class FirestoreOperations {
         Timestamp startTimestamp = Timestamp.of(startDate);
         Timestamp endTimestamp = Timestamp.of(endDate);
 
-
         Query query = db.collection(collectionId)
-                .whereGreaterThanOrEqualTo("timestamp", startTimestamp.toString())
-                .whereLessThanOrEqualTo("timestamp", endTimestamp.toString());
+                .whereGreaterThanOrEqualTo("timestamp", startTimestamp)
+                .whereLessThanOrEqualTo("timestamp", endTimestamp);
 
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         logger.info("GetImages by date and characteristic");
