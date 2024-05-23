@@ -2,10 +2,12 @@ package grcpserver.services.firestore;
 
 import com.google.api.core.ApiFuture;
 import com.google.auth.Credentials;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.*;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
@@ -37,5 +39,31 @@ public class FirestoreOperations {
         } else {
             throw new RuntimeException("Image not found in Firestore");
         }
+    }
+
+    public List<ProcessedImageData> getImagesByDateAndCharacteristic(Date startDate, Date endDate, String characteristic) throws ExecutionException, InterruptedException {
+        Timestamp startTimestamp = Timestamp.of(startDate);
+        Timestamp endTimestamp = Timestamp.of(endDate);
+
+
+        Query query = db.collection(collectionId)
+                .whereGreaterThanOrEqualTo("timestamp", startTimestamp.toString())
+                .whereLessThanOrEqualTo("timestamp", endTimestamp.toString());
+
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        logger.info("GetImages by date and characteristic");
+        List<QueryDocumentSnapshot> documents = querySnapshot.get().getDocuments();
+
+        List<ProcessedImageData> results = new ArrayList<>();
+        for (QueryDocumentSnapshot document : documents) {
+
+            ProcessedImageData data = document.toObject(ProcessedImageData.class);
+            if (data.getTranslatedLabels() != null && data.getTranslatedLabels().contains(characteristic)) {
+                results.add(data);
+            }
+        }
+
+
+        return results;
     }
 }

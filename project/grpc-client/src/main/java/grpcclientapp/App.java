@@ -2,6 +2,7 @@ package grpcclientapp;
 
 import com.google.protobuf.ByteString;
 import grpcclientapp.observers.DownloadImageResponseStream;
+import grpcclientapp.observers.GetFileNamesResponseStream;
 import grpcclientapp.observers.GetImageCharacteristicsResponseStream;
 import grpcclientapp.observers.UploadImageResponseStream;
 import io.grpc.ManagedChannel;
@@ -45,6 +46,7 @@ public class App {
                 System.out.println("1: Upload Image");
                 System.out.println("2: Download Image");
                 System.out.println("3: Get Image Characteristics");
+                System.out.println("4: Get Images by Date and Characteristic");
                 System.out.println("0: Exit");
                 System.out.println("########################");
                 System.out.print("Enter an Option: ");
@@ -63,7 +65,13 @@ public class App {
                         break;
                     case 3:
                         String id = read("Enter the image id to get characteristics (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
-                        getImageCharacteristcs(id);
+                        getImageCharacteristic(id);
+                        break;
+                    case 4:
+                        String startDate = read("Enter the start date (e.g., 20-04-2024): ");
+                        String endDate = read("Enter the end date (e.g., 31-05-2024): ");
+                        String characteristic = read("Enter the characteristic to filter by (e.g.,cat): ");
+                        getImagesByDateAndCharacteristic(startDate, endDate, characteristic);
                         break;
                     case 0:
                         System.out.println("Exiting...");
@@ -77,13 +85,24 @@ public class App {
         }
     }
 
-    private static void getImageCharacteristcs(String id) {
+    private static void getImageCharacteristic(String id) {
         GetImageCharacteristicsRequest request = GetImageCharacteristicsRequest.newBuilder()
                 .setId(id)
                 .build();
         StreamObserver<GetImageCharacteristicsResponse> responseStream =
                 new GetImageCharacteristicsResponseStream();
         noBlockingStub.getImageCharacteristics(request, responseStream);
+    }
+
+    private static void getImagesByDateAndCharacteristic(String startDate, String endDate, String characteristic) {
+        GetFileNamesRequest request = GetFileNamesRequest.newBuilder()
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setCharacteristic(characteristic)
+                .build();
+        StreamObserver<GetFileNamesResponse> responseStream =
+                new GetFileNamesResponseStream();
+        noBlockingStub.getFileNamesByCharacteristic(request, responseStream);
     }
 
     private static String read(String msg) {

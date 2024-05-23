@@ -70,16 +70,17 @@ message GetImageCharacteristicsResponse {
 
 //request to get file names based on image characteristics
 message GetFileNamesRequest {
-  //characteristic to search for
-  string characteristic = 1;
+
   //start date to search for
-  string startDate = 2;
+  string startDate = 1;
   //end date to search for
-  string endDate = 3;
+  string endDate = 2;
+  //characteristic to search for
+  string characteristic = 3;
 }
 
 //file names found based on image processing characteristics query
 message GetFileNamesResponse {
   //list of file names found
-  repeated string names = 1;
+  repeated string ids = 1;
 }

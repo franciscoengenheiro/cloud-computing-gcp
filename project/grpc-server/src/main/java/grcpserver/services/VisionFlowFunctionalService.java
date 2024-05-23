@@ -14,6 +14,10 @@ import servicestubs.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -126,5 +130,30 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void getFileNamesByCharacteristic(
+            GetFileNamesRequest request,
+            StreamObserver<GetFileNamesResponse> responseObserver
+    ) {
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+            Date startDate = formatter.parse(request.getStartDate());
+            Date endDate = formatter.parse(request.getEndDate());
+
+            String characteristic = request.getCharacteristic();
+            List<ProcessedImageData> processedImageDataList = firestoreOperations.getImagesByDateAndCharacteristic(startDate, endDate, characteristic);
+            GetFileNamesResponse.Builder responseBuilder = GetFileNamesResponse.newBuilder();
+            for (ProcessedImageData processedImageData : processedImageDataList) {
+                responseBuilder.addIds(processedImageData.getId());
+            }
+            GetFileNamesResponse response = responseBuilder.build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

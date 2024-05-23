@@ -56,4 +56,15 @@ public class ProcessedImageData {
     public List<String> getTranslatedLabels() {
         return translatedLabels;
     }
+    @Override
+    public String toString() {
+        return "ProcessedImageData{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", translationLang='" + translationLang + '\'' +
+                ", timestamp='" + timestamp + '\'' +
+                ", labels=" + labels +
+                ", translatedLabels=" + translatedLabels +
+                '}';
+    }
 }
