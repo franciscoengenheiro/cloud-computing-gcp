@@ -1,0 +1,46 @@
+\documentclass[a4paper,openright,oneside,11pt]{report}
+
+% Define pacotes externos, língua, margens, tipos de letra e novos comandos
+\input{preamble}
+
+\begin{document}
+
+    \pagenumbering{roman}
+    \thispagestyle{empty}
+
+    % capa
+    \input{frontcover}
+
+    % line spacing: 12pt for single, 18pt for 1 1/2, and 24pt for double spacing
+    \baselineskip 18pt
+
+    % geração do índice de conteúdos
+    % \cleardoublepage
+    \tableofcontents
+    \thispagestyle{empty}
+    % \cleardoublepage
+
+    % geração do índice de figuras e de tabelas
+    %\listoffigures \cleardoublepage
+    %\listoftables \cleardoublepage
+
+    % reiniciar a numeração de páginas
+    \setcounter{page}{1}
+    \pagenumbering{arabic}
+
+    % capítulos
+    \input{chapters/01_introduction}
+    \input{chapters/02_google_cloud_apis}
+    \input{chapters/03_architecture}
+    \input{chapters/04_operations}
+    \input{chapters/05_project_structure}
+    \input{chapters/06_deployment}
+    \input{chapters/07_conclusion}
+
+    % referências
+    % \clearpage
+    \bibliographystyle{unsrt}
+    \bibliography{bibliography}
+    \addcontentsline{toc}{chapter}{References}
+
+\end{document}

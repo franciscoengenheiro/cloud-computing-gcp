@@ -1,0 +1,44 @@
+% Packages utilizadas e respetivos parâmetros.
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+% see https://tex.stackexchange.com/questions/44694/fontenc-vs-inputenc
+\usepackage[english]{babel}
+
+% Definições das dimensões das páginas
+% TODO: redefine the page dimensions
+\setlength{\textheight}{24.00cm}
+\setlength{\textwidth}{15.50cm}
+\setlength{\topmargin}{0.35cm}
+\setlength{\headheight}{0cm}
+\setlength{\headsep}{0cm}
+\setlength{\oddsidemargin}{0.25cm}
+\setlength{\evensidemargin}{0.25cm}
+
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+
+\usepackage{graphicx}
+
+% removes paragraph indentation
+\usepackage{parskip}% http://ctan.org/pkg/parskip
+\setlength{\parindent}{0pt}
+
+\usepackage{enumitem}
+\setlist[enumerate,1]{label=\arabic*}
+\setlist[enumerate,2]{label=\theenumi.\arabic*}
+\setlist[enumerate,3]{label=\theenumii.\arabic*}
+
+% defines a new list with bold enumerate
+\newlist{boldenumerate}{enumerate}{1}
+\setlist[boldenumerate]{label=\textbf{\arabic*.}}
+
+% Redefine itemize labels for all levels to use dots
+\renewcommand{\labelitemi}{$\bullet$}
+\renewcommand{\labelitemii}{$\bullet$}
+\renewcommand{\labelitemiii}{$\bullet$}
+\renewcommand{\labelitemiv}{$\bullet$}

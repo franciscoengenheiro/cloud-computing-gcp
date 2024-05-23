@@ -1,0 +1,24 @@
+\babel@toc {english}{}\relax
+\contentsline {chapter}{\numberline {1}Introduction}{2}{}%
+\contentsline {section}{\numberline {1.1}Document Structure}{2}{}%
+\contentsline {chapter}{\numberline {2}Google Cloud APIs}{3}{}%
+\contentsline {section}{\numberline {2.1}Google Cloud Storage}{3}{}%
+\contentsline {section}{\numberline {2.2}Firestore}{3}{}%
+\contentsline {section}{\numberline {2.3}Google Cloud Functions}{3}{}%
+\contentsline {section}{\numberline {2.4}Google Cloud Pub/Sub}{3}{}%
+\contentsline {section}{\numberline {2.5}Google Cloud Vision}{3}{}%
+\contentsline {section}{\numberline {2.6}Google Cloud Translation}{3}{}%
+\contentsline {chapter}{\numberline {3}Architecture}{4}{}%
+\contentsline {chapter}{\numberline {4}Operations}{5}{}%
+\contentsline {section}{\numberline {4.1}Functional Operations}{5}{}%
+\contentsline {subsection}{\numberline {4.1.1}Contract}{5}{}%
+\contentsline {subsection}{\numberline {4.1.2}Design Aspects}{5}{}%
+\contentsline {section}{\numberline {4.2}Elasticity Management}{5}{}%
+\contentsline {subsection}{\numberline {4.2.1}Contract}{5}{}%
+\contentsline {subsection}{\numberline {4.2.2}Design Aspects}{5}{}%
+\contentsline {chapter}{\numberline {5}Project Structure}{6}{}%
+\contentsline {section}{\numberline {5.1}Maven Modules}{6}{}%
+\contentsline {chapter}{\numberline {6}Deployment}{7}{}%
+\contentsline {section}{\numberline {6.1}Virtual Machine Templates}{7}{}%
+\contentsline {chapter}{\numberline {7}Conclusion}{8}{}%
+\contentsline {chapter}{References}{8}{}%
