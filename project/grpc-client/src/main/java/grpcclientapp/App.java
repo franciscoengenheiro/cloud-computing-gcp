@@ -1,5 +1,10 @@
 package grpcclientapp;
 
+import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.compute.v1.InstanceGroupManagersClient;
+import com.google.cloud.compute.v1.ListManagedInstancesInstanceGroupManagersRequest;
+import com.google.cloud.compute.v1.ManagedInstance;
+import com.google.cloud.compute.v1.Operation;
 import com.google.protobuf.ByteString;
 import grpcclientapp.observers.DownloadImageResponseStream;
 import grpcclientapp.observers.GetFileNamesResponseStream;
@@ -16,24 +21,33 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 public class App {
-    // generic ClientApp for Calling a grpc Service
     private static String svcIP = "localhost";
     private static int svcPort = 8000;
-    private static ManagedChannel channel;
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingStub;
     private static final Logger logger = Logger.getLogger(App.class.getName());
+    private static final String PROJECT_ID = "cn2324-t1-g05";
+    private static final String ZONE = "europe-west1-b";
+    private static final String LABELS_APP_INSTANCE_GROUP_NAME = "instance-group-labels-app";
+    private static final String GRPC_SERVER_INSTANCE_GROUP_NAME = "instance-group-grpc-server";
+
+    private static InstanceGroupManagersClient managersClient;
 
     public static void main(String[] args) {
         try {
+            managersClient = InstanceGroupManagersClient.create();
             if (args.length == 2) {
                 svcIP = args[0];
                 svcPort = Integer.parseInt(args[1]);
             }
             logger.info("connect to " + svcIP + ":" + svcPort);
-            channel = ManagedChannelBuilder.forAddress(svcIP, svcPort)
+            // Channels are secure by default (via SSL/TLS).
+            // For the example we disable TLS to avoid
+            // needing certificates.
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(svcIP, svcPort)
                     // Channels are secure by default (via SSL/TLS).
                     // For the example we disable TLS to avoid
                     // needing certificates.
@@ -47,45 +61,34 @@ public class App {
                 System.out.println("2: Download Image");
                 System.out.println("3: Get Image Characteristics");
                 System.out.println("4: Get Images by Date and Characteristic");
+                System.out.println("5: List gRPC Server VM instances");
+                System.out.println("6: Resize gRPC Server VM instances");
+                System.out.println("7: List Labels App VM instances");
+                System.out.println("8: Resize Labels App VM instances");
                 System.out.println("0: Exit");
                 System.out.println("########################");
                 System.out.print("Enter an Option: ");
-                Scanner scanner = new Scanner(System.in);
-                option = scanner.nextInt();
+                option = readInt(null);
                 switch (option) {
-                    case 1:
-                        String path = read("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
-                        String translationlang = read("Enter the language to translate the image to (e.g., pt, fr, es): ");
-                        uploadImage(path, translationlang);
-                        break;
-                    case 2:
-                        String idToDownload = read("Enter the image id to download (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
-                        String dirToDownloadTo = read("Enter the directory to download the image to (e.g., project/grpc-client/downloaded-imgs): ");
-                        downloadImage(idToDownload, dirToDownloadTo);
-                        break;
-                    case 3:
-                        String id = read("Enter the image id to get characteristics (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
-                        getImageCharacteristic(id);
-                        break;
-                    case 4:
-                        String startDate = read("Enter the start date (e.g., 20-04-2024): ");
-                        String endDate = read("Enter the end date (e.g., 31-05-2024): ");
-                        String characteristic = read("Enter the characteristic to filter by (e.g.,cat): ");
-                        getImagesByDateAndCharacteristic(startDate, endDate, characteristic);
-                        break;
-                    case 0:
-                        System.out.println("Exiting...");
-                        break;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
+                    case 1: uploadImage(); break;
+                    case 2: downloadImage(); break;
+                    case 3: getImageCharacteristics(); break;
+                    case 4: getImagesByDateAndCharacteristic(); break;
+                    case 5: listManagedInstanceGroupVMs(GRPC_SERVER_INSTANCE_GROUP_NAME); break;
+                    case 6: resizeManagedInstanceGroup(GRPC_SERVER_INSTANCE_GROUP_NAME); break;
+                    case 7: listManagedInstanceGroupVMs(LABELS_APP_INSTANCE_GROUP_NAME); break;
+                    case 8: resizeManagedInstanceGroup(LABELS_APP_INSTANCE_GROUP_NAME); break;
+                    case 0: System.out.println("Exiting..."); break;
+                    default: System.out.println("Invalid option. Please try again.");
                 }
             } while (option != 0);
         } catch (Exception e) {
-            System.out.println("An error occurred" + e);
+            logger.severe("Error: " + e.getMessage());
         }
     }
 
-    private static void getImageCharacteristic(String id) {
+    private static void getImageCharacteristics() {
+        String id = read("Enter the image id to get characteristics (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
         GetImageCharacteristicsRequest request = GetImageCharacteristicsRequest.newBuilder()
                 .setId(id)
                 .build();
@@ -94,7 +97,10 @@ public class App {
         noBlockingStub.getImageCharacteristics(request, responseStream);
     }
 
-    private static void getImagesByDateAndCharacteristic(String startDate, String endDate, String characteristic) {
+    private static void getImagesByDateAndCharacteristic() {
+        String startDate = read("Enter the start date (e.g., 20-04-2024): ");
+        String endDate = read("Enter the end date (e.g., 31-05-2024): ");
+        String characteristic = read("Enter the characteristic to filter by (e.g., Gato): ");
         GetFileNamesRequest request = GetFileNamesRequest.newBuilder()
                 .setStartDate(startDate)
                 .setEndDate(endDate)
@@ -105,13 +111,9 @@ public class App {
         noBlockingStub.getFileNamesByCharacteristic(request, responseStream);
     }
 
-    private static String read(String msg) {
-        Scanner input = new Scanner(System.in);
-        System.out.print(msg);
-        return input.nextLine().trim();
-    }
-
-    private static void uploadImage(String imagePath, String translationlang) throws IOException {
+    private static void uploadImage() throws IOException {
+        String imagePath = read("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
+        String translationlang = read("Enter the language to translate the image to (e.g., pt, fr, es): ");
         StreamObserver<UploadImageResponse> responseStream = new UploadImageResponseStream();
         StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingStub.uploadImage(responseStream);
         // Read bytes from file and send to server
@@ -143,13 +145,59 @@ public class App {
         streamToAddImageBytes.onCompleted();
     }
 
-    private static void downloadImage(String id, String dirToDownloadTo) {
+    private static void downloadImage() {
+        String id = read("Enter the image id to download (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
+        String dir = read("Enter the directory to download the image to (e.g., project/grpc-client/downloaded-imgs): ");
         DownloadImageRequest imageDownloadData = DownloadImageRequest.newBuilder()
                 .setId(id)
-                .setPath(dirToDownloadTo)
+                .setPath(dir)
                 .build();
         StreamObserver<DownloadImageResponse> responseStream = new DownloadImageResponseStream(imageDownloadData);
         noBlockingStub.downloadImage(imageDownloadData, responseStream);
+    }
+
+    static void listManagedInstanceGroupVMs(String instanceGroupName) {
+        ListManagedInstancesInstanceGroupManagersRequest request =
+                ListManagedInstancesInstanceGroupManagersRequest.newBuilder()
+                        .setInstanceGroupManager(instanceGroupName)
+                        .setProject(PROJECT_ID)
+                        .setReturnPartialSuccess(true)
+                        .setZone(ZONE)
+                        .build();
+
+        System.out.println("Instances of instance group: " + instanceGroupName);
+        for (ManagedInstance instance :
+                managersClient.listManagedInstances(request).iterateAll()) {
+            System.out.println(instance.getInstance() + " with STATUS = " + instance.getInstanceStatus());
+        }
+    }
+
+    static void resizeManagedInstanceGroup(String instanceGroupName) throws InterruptedException, ExecutionException {
+        int newSize = readInt("Enter the new size for " + instanceGroupName + ": ");
+        OperationFuture<Operation, Operation> result = managersClient.resizeAsync(
+                PROJECT_ID,
+                ZONE,
+                instanceGroupName,
+                newSize
+        );
+        Operation oper = result.get();
+        System.out.println("Resizing with status " + oper.getStatus());
+    }
+
+    private static String read(String msg) {
+        Scanner input = new Scanner(System.in);
+        if (msg != null) {
+            System.out.print(msg);
+        }
+        return input.nextLine().trim();
+    }
+
+    private static int readInt(String msg) {
+        Scanner input = new Scanner(System.in);
+        if (msg != null) {
+            System.out.print(msg);
+        }
+        return input.nextInt();
     }
 
 }
