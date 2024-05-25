@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  25 MAY 2024 21:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  25 MAY 2024 23:38
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -276,55 +276,55 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 
 ]
 Chapter 1.
-) (chapters/02_google_cloud_apis.tex [2
+) (chapters/02_architecture.tex [2
 
 ]
 Chapter 2.
-) (chapters/03_architecture.tex [3
 
-]
-Chapter 3.
-) (chapters/04_operations.tex [4
+LaTeX Warning: Citation `google-cloud-platform' on page 3 undefined on input li
+ne 4.
 
-]
-Chapter 4.
-
-LaTeX Warning: Citation `grpc-protobuf' on page 5 undefined on input line 4.
-
-<../figures/grpc-scaling-contract.png, id=26, 1355.0625pt x 328.22626pt>
-File: ../figures/grpc-scaling-contract.png Graphic file (type png)
-<use ../figures/grpc-scaling-contract.png>
-Package pdftex.def Info: ../figures/grpc-scaling-contract.png  used on input li
-ne 35.
-(pdftex.def)             Requested size: 386.95894pt x 93.73076pt.
-LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 4
-6.
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 9
+.
 (C:\Users\franc\AppData\Local\Programs\MiKTeX\tex/latex/base\t1cmtt.fd
 File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
+<../figures/system-architecture.png, id=20, 1207.51125pt x 590.205pt>
+File: ../figures/system-architecture.png Graphic file (type png)
+<use ../figures/system-architecture.png>
+Package pdftex.def Info: ../figures/system-architecture.png  used on input line
+ 17.
+(pdftex.def)             Requested size: 483.69684pt x 236.42003pt.
+
+[3
+
+ <../figures/system-architecture.png>]) (chapters/03_operations.tex [4]
+Chapter 3.
+
+LaTeX Warning: Citation `grpc-protobuf' on page 5 undefined on input line 4.
+
 [5
 
-]) (chapters/05_client_connection.tex [6 <../figures/grpc-scaling-contract.png 
-(PNG copy)>] [7]
+]) (chapters/04_client_connection.tex [6]
+Chapter 4.
+
+LaTeX Warning: Citation `retry-pattern' on page 7 undefined on input line 19.
+
+) (chapters/05_deployment.tex [7
+
+] [8]
 Chapter 5.
+) (chapters/06_project_structure.tex [9
 
-LaTeX Warning: Citation `retry-pattern' on page 8 undefined on input line 19.
-
-) (chapters/06_deployment.tex [8
-
-] [9]
+]
 Chapter 6.
-) (chapters/07_project_structure.tex [10
+) (chapters/07_conclusion.tex [10
 
 ]
 Chapter 7.
-) (chapters/08_conclusion.tex [11
-
-]
-Chapter 8.
 )
 No file main.bbl.
-[12
+[11
 
 ] (C:/Users\franc\IdeaProjects\CN-2324-G04\project\report\auxil\main.aux)
  ***********
@@ -335,21 +335,18 @@ L3 programming layer <2024-04-11>
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 4427 strings out of 474370
- 76177 string characters out of 5740535
- 1934754 words of memory out of 5000000
- 26757 multiletter control sequences out of 15000+600000
+ 4413 strings out of 474370
+ 75641 string characters out of 5740535
+ 1932754 words of memory out of 5000000
+ 26746 multiletter control sequences out of 15000+600000
  570319 words of font info for 58 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  62i,6n,68p,543b,236s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt
+ <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti
 1095.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi60
-0\ecti1095.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec
+0\ectt1095.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec
 /dpi600\ecbx1440.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknap
 pen/ec/dpi600\ecbx2074.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour
 /jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/
@@ -359,9 +356,9 @@ eX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\franc\AppData\Loca
 l\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk><C:/Users/franc/AppData
 /Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
 Output written on C:/Users\franc\IdeaProjects\CN-2324-G04\project\report\out\ma
-in.pdf (13 pages, 345859 bytes).
+in.pdf (12 pages, 397011 bytes).
 PDF statistics:
- 355 PDF objects out of 1000 (max. 8388607)
+ 357 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 

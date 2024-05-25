@@ -28,16 +28,7 @@ elasticity management was implemented as a mandatory requirement for scaling ins
 
 \subsection{Contract}\label{subsec:elasticity-management-contract}
 
-The elasticity management service was implemented as a gRPC service with the contract shown in Figure~\ref{fig:grpc-scaling-contract}.
-
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=0.8\textwidth]{../figures/grpc-scaling-contract}
-    \caption{Elasticity Management Contract}
-    \label{fig:grpc-scaling-contract}
-\end{figure}
-
-The contract provides the following RPC methods:
+The elasticity management service contract has the following RPC operations:
 
 \begin{itemize}
     \item \textbf{listManagedInstanceGroups}: lists all managed instance groups.
@@ -60,7 +51,7 @@ The following messages are used in the contract:
     and as such, they were defined as separate messages to increase the readability of the contract;
     \item \textbf{ManagedInstanceGroupResizeRequest}:
     contains the \textbf{name} of a managed instance group and the \textbf{new size} for the group;
-    \item \textbf{ManagedInstanceGroupVMResponse}: contains the \textbf{name} and \textbf{status} of a VM instance.
+    \item \textbf{ManagedInstanceGroupVMResponse}: contains the \textbf{name} and \textbf{status} (e.g., RUNNING, TERMINATED) of a VM instance.
 \end{itemize}
 
 \subsection{Design Aspects}\label{subsec:elasticity-management-design-aspects}

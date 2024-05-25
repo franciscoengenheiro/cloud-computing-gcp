@@ -1,28 +1,22 @@
 \babel@toc {english}{}\relax 
 \contentsline {chapter}{\numberline {1}Introduction}{2}{}%
 \contentsline {section}{\numberline {1.1}Document Structure}{2}{}%
-\contentsline {chapter}{\numberline {2}Google Cloud APIs}{3}{}%
-\contentsline {section}{\numberline {2.1}Google Cloud Storage}{3}{}%
-\contentsline {section}{\numberline {2.2}Firestore}{3}{}%
-\contentsline {section}{\numberline {2.3}Google Cloud Compute Engine}{3}{}%
-\contentsline {section}{\numberline {2.4}Google Cloud Functions}{3}{}%
-\contentsline {section}{\numberline {2.5}Google Cloud Pub/Sub}{3}{}%
-\contentsline {section}{\numberline {2.6}Google Cloud Vision}{3}{}%
-\contentsline {section}{\numberline {2.7}Google Cloud Translation}{3}{}%
-\contentsline {chapter}{\numberline {3}Architecture}{4}{}%
-\contentsline {chapter}{\numberline {4}Operations}{5}{}%
-\contentsline {section}{\numberline {4.1}Functional Operations}{5}{}%
-\contentsline {subsection}{\numberline {4.1.1}Contract}{5}{}%
-\contentsline {subsection}{\numberline {4.1.2}Design Aspects}{5}{}%
-\contentsline {section}{\numberline {4.2}Elasticity Management}{5}{}%
-\contentsline {subsection}{\numberline {4.2.1}Contract}{5}{}%
-\contentsline {subsection}{\numberline {4.2.2}Design Aspects}{6}{}%
-\contentsline {chapter}{\numberline {5}Client Connection}{8}{}%
-\contentsline {section}{\numberline {5.1}Cloud Http Function}{8}{}%
-\contentsline {section}{\numberline {5.2}Client Lookup Service}{8}{}%
-\contentsline {chapter}{\numberline {6}Deployment}{10}{}%
-\contentsline {section}{\numberline {6.1}Virtual Machine Templates}{10}{}%
-\contentsline {chapter}{\numberline {7}Project Structure}{11}{}%
-\contentsline {section}{\numberline {7.1}Maven Modules}{11}{}%
-\contentsline {chapter}{\numberline {8}Conclusion}{12}{}%
-\contentsline {chapter}{References}{12}{}%
+\contentsline {chapter}{\numberline {2}Architecture}{3}{}%
+\contentsline {section}{\numberline {2.1}System Overview}{3}{}%
+\contentsline {section}{\numberline {2.2}Description}{3}{}%
+\contentsline {chapter}{\numberline {3}Operations}{5}{}%
+\contentsline {section}{\numberline {3.1}Functional Operations}{5}{}%
+\contentsline {subsection}{\numberline {3.1.1}Contract}{5}{}%
+\contentsline {subsection}{\numberline {3.1.2}Design Aspects}{5}{}%
+\contentsline {section}{\numberline {3.2}Elasticity Management}{5}{}%
+\contentsline {subsection}{\numberline {3.2.1}Contract}{5}{}%
+\contentsline {subsection}{\numberline {3.2.2}Design Aspects}{6}{}%
+\contentsline {chapter}{\numberline {4}Client Connection}{7}{}%
+\contentsline {section}{\numberline {4.1}Cloud Http Function}{7}{}%
+\contentsline {section}{\numberline {4.2}Client Lookup Service}{7}{}%
+\contentsline {chapter}{\numberline {5}Deployment}{9}{}%
+\contentsline {section}{\numberline {5.1}Virtual Machine Templates}{9}{}%
+\contentsline {chapter}{\numberline {6}Project Structure}{10}{}%
+\contentsline {section}{\numberline {6.1}Maven Modules}{10}{}%
+\contentsline {chapter}{\numberline {7}Conclusion}{11}{}%
+\contentsline {chapter}{References}{11}{}%
