@@ -10,6 +10,8 @@ import grpcclientapp.observers.DownloadImageResponseStream;
 import grpcclientapp.observers.GetFileNamesResponseStream;
 import grpcclientapp.observers.GetImageCharacteristicsResponseStream;
 import grpcclientapp.observers.UploadImageResponseStream;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
@@ -17,42 +19,35 @@ import servicestubs.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class App {
-    private static String svcIP = "localhost";
-    private static int svcPort = 8000;
-    private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingStub;
-    private static final Logger logger = Logger.getLogger(App.class.getName());
+    private static final int SERVER_PORT = 8000;
     private static final String PROJECT_ID = "cn2324-t1-g05";
     private static final String ZONE = "europe-west1-b";
+    private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "TODO";
     private static final String LABELS_APP_INSTANCE_GROUP_NAME = "instance-group-labels-app";
     private static final String GRPC_SERVER_INSTANCE_GROUP_NAME = "instance-group-grpc-server";
-
+    private static final Logger logger = Logger.getLogger(App.class.getName());
+    private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingStub;
+    private static ManagedChannel channel;
     private static InstanceGroupManagersClient managersClient;
 
     public static void main(String[] args) {
         try {
+            establishConnectionToServer();
             managersClient = InstanceGroupManagersClient.create();
-            if (args.length == 2) {
-                svcIP = args[0];
-                svcPort = Integer.parseInt(args[1]);
-            }
-            logger.info("connect to " + svcIP + ":" + svcPort);
-            // Channels are secure by default (via SSL/TLS).
-            // For the example we disable TLS to avoid
-            // needing certificates.
-            ManagedChannel channel = ManagedChannelBuilder.forAddress(svcIP, svcPort)
-                    // Channels are secure by default (via SSL/TLS).
-                    // For the example we disable TLS to avoid
-                    // needing certificates.
-                    .usePlaintext()
-                    .build();
             noBlockingStub = VisionFlowFunctionalServiceGrpc.newStub(channel);
             int option;
             do {
@@ -87,8 +82,85 @@ public class App {
         }
     }
 
+    private static void establishConnectionToServer() {
+        // Using a retry mechanism to establish connection to the server
+        // Retry mechanism will try to connect to the server 5 times with a 3-second wait between each attempt
+        RetryConfig config = RetryConfig.custom()
+                .maxAttempts(5)
+                .retryExceptions(IllegalStateException.class)
+                .waitDuration(Duration.ofSeconds(3))
+                .build();
+        Retry retry = Retry.of("connect-to-server", config);
+        retry.getEventPublisher().onEvent(event -> logger.info("Retry event: " + event));
+
+        Supplier<ManagedChannel> supplier = Retry.decorateSupplier(retry, () -> {
+            String serverIp = searchForAServerIp();
+            if (serverIp == null) {
+                throw new IllegalStateException("No server IPs found");
+            }
+
+            channel = ManagedChannelBuilder.forAddress(serverIp, SERVER_PORT)
+                    .usePlaintext()
+                    .build();
+
+            logger.info("Trying to establish connection to server...");
+
+            do {
+                // get current state of the channel
+                switch (channel.getState(true)) {
+                    case READY:
+                        logger.info("Successfully connected to server at: " + serverIp);
+                        return channel;
+                    case TRANSIENT_FAILURE:
+                    case SHUTDOWN:
+                        throw new IllegalStateException("Failed to connect to server at: " + serverIp);
+                    case IDLE:
+                    case CONNECTING:
+                    default:
+                }
+            } while (true);
+        });
+
+        try {
+            channel = supplier.get();
+        } catch (Exception e) {
+            logger.severe("Error establishing connection to server: " + e.getMessage());
+        }
+    }
+
+    private static String searchForAServerIp() {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(CLOUD_FUNCTION_IP_LOOKUP_URL))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (httpResponse.statusCode() != 200) {
+                logger.severe("Error looking up service IP address: " + httpResponse.statusCode());
+                return null;
+            }
+            String response = httpResponse.body();
+            if (response.isEmpty() && response.isBlank()) {
+                System.out.println("No IPs found.");
+                return null;
+            }
+            // Cloud Http Function returns a list of IPs shuffled and separated by ";"
+            String[] ips = response.split(";");
+            System.out.println("IPs found:");
+            for (String ip : ips) {
+                System.out.println(ip);
+            }
+            return ips[0]; // return the first IP since it's shuffled
+        } catch (IOException | InterruptedException e) {
+            logger.severe("Error looking up service IP address: " + e.getMessage());
+            return null;
+        }
+    }
+
     private static void getImageCharacteristics() {
-        String id = read("Enter the image id to get characteristics (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
+        String id = readString("Enter the image id to get characteristics (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
         GetImageCharacteristicsRequest request = GetImageCharacteristicsRequest.newBuilder()
                 .setId(id)
                 .build();
@@ -98,9 +170,9 @@ public class App {
     }
 
     private static void getImagesByDateAndCharacteristic() {
-        String startDate = read("Enter the start date (e.g., 20-04-2024): ");
-        String endDate = read("Enter the end date (e.g., 31-05-2024): ");
-        String characteristic = read("Enter the characteristic to filter by (e.g., Gato): ");
+        String startDate = readString("Enter the start date (e.g., 20-04-2024): ");
+        String endDate = readString("Enter the end date (e.g., 31-05-2024): ");
+        String characteristic = readString("Enter the characteristic to filter by (e.g., Gato): ");
         GetFileNamesRequest request = GetFileNamesRequest.newBuilder()
                 .setStartDate(startDate)
                 .setEndDate(endDate)
@@ -112,8 +184,8 @@ public class App {
     }
 
     private static void uploadImage() throws IOException {
-        String imagePath = read("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
-        String translationlang = read("Enter the language to translate the image to (e.g., pt, fr, es): ");
+        String imagePath = readString("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
+        String translationlang = readString("Enter the language to translate the image to (e.g., pt, fr, es): ");
         StreamObserver<UploadImageResponse> responseStream = new UploadImageResponseStream();
         StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingStub.uploadImage(responseStream);
         // Read bytes from file and send to server
@@ -140,14 +212,14 @@ public class App {
             }
         } catch (IOException e) {
             // Handle IO exception
-            e.printStackTrace();
+            logger.severe("Error reading file: " + e.getMessage());
         }
         streamToAddImageBytes.onCompleted();
     }
 
     private static void downloadImage() {
-        String id = read("Enter the image id to download (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
-        String dir = read("Enter the directory to download the image to (e.g., project/grpc-client/downloaded-imgs): ");
+        String id = readString("Enter the image id to download (e.g., cat#7db8634f-8eed-4c27-aa05-f88b5b87a296): ");
+        String dir = readString("Enter the directory to download the image to (e.g., project/grpc-client/downloaded-imgs): ");
         DownloadImageRequest imageDownloadData = DownloadImageRequest.newBuilder()
                 .setId(id)
                 .setPath(dir)
@@ -184,7 +256,7 @@ public class App {
         System.out.println("Resizing with status " + oper.getStatus());
     }
 
-    private static String read(String msg) {
+    private static String readString(String msg) {
         Scanner input = new Scanner(System.in);
         if (msg != null) {
             System.out.print(msg);

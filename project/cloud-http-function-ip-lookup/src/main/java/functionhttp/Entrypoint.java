@@ -6,7 +6,10 @@ import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
 
 import java.io.BufferedWriter;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class Entrypoint implements HttpFunction {
@@ -21,11 +24,16 @@ public class Entrypoint implements HttpFunction {
         logger.info("Instances of instance group: " + instanceGroupName);
         BufferedWriter writer = response.getWriter();
         try (InstancesClient client = InstancesClient.create()) {
-            String[] ips = StreamSupport.stream(client.list(PROJECT_ID, ZONE).iterateAll().spliterator(), false)
-                    .filter(instance -> instance.getStatus().compareTo("RUNNING") == 0
+            List<String> ips = StreamSupport.stream(client.list(PROJECT_ID, ZONE).iterateAll().spliterator(), false)
+                    .filter(instance -> "RUNNING".equals(instance.getStatus())
                             && instance.getName().contains(instanceGroupName))
                     .map(instance -> instance.getNetworkInterfaces(0).getAccessConfigs(0).getNatIP())
-                    .toArray(String[]::new);
+                    .collect(Collectors.toList());
+
+            // Shuffle the list of IP addresses
+            Collections.shuffle(ips);
+
+            // Join the shuffled IP addresses into a single string and write to the response
             writer.write(String.join(";", ips));
         }
     }
