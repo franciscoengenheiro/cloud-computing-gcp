@@ -4,15 +4,14 @@
 % see https://tex.stackexchange.com/questions/44694/fontenc-vs-inputenc
 \usepackage[english]{babel}
 
-% Definições das dimensões das páginas
-% TODO: redefine the page dimensions
-\setlength{\textheight}{24.00cm}
-\setlength{\textwidth}{15.50cm}
-\setlength{\topmargin}{0.35cm}
-\setlength{\headheight}{0cm}
-\setlength{\headsep}{0cm}
-\setlength{\oddsidemargin}{0.25cm}
-\setlength{\evensidemargin}{0.25cm}
+%% Sets page size and margins
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    total={170mm,257mm},
+    left=20mm,
+    top=20mm,
+}
 
 \newenvironment{lyxlist}[1]
 {\begin{list}{}
