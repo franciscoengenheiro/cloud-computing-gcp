@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  25 MAY 2024 20:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  25 MAY 2024 21:00
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -304,20 +304,27 @@ File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
 [5
 
-]) (chapters/05_project_structure.tex [6 <../figures/grpc-scaling-contract.png 
+]) (chapters/05_client_connection.tex [6 <../figures/grpc-scaling-contract.png 
 (PNG copy)>] [7]
 Chapter 5.
+
+LaTeX Warning: Citation `retry-pattern' on page 8 undefined on input line 19.
+
 ) (chapters/06_deployment.tex [8
 
-]
+] [9]
 Chapter 6.
-) (chapters/07_conclusion.tex [9
+) (chapters/07_project_structure.tex [10
 
 ]
 Chapter 7.
+) (chapters/08_conclusion.tex [11
+
+]
+Chapter 8.
 )
 No file main.bbl.
-[10
+[12
 
 ] (C:/Users\franc\IdeaProjects\CN-2324-G04\project\report\auxil\main.aux)
  ***********
@@ -328,12 +335,15 @@ L3 programming layer <2024-04-11>
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
  ) 
 Here is how much of TeX's memory you used:
- 4415 strings out of 474370
- 75717 string characters out of 5740535
- 1933754 words of memory out of 5000000
- 26748 multiletter control sequences out of 15000+600000
+ 4427 strings out of 474370
+ 76177 string characters out of 5740535
+ 1934754 words of memory out of 5000000
+ 26757 multiletter control sequences out of 15000+600000
  570319 words of font info for 58 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  62i,6n,68p,543b,236s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -349,9 +359,9 @@ eX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\franc\AppData\Loca
 l\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk><C:/Users/franc/AppData
 /Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
 Output written on C:/Users\franc\IdeaProjects\CN-2324-G04\project\report\out\ma
-in.pdf (11 pages, 339773 bytes).
+in.pdf (13 pages, 345859 bytes).
 PDF statistics:
- 340 PDF objects out of 1000 (max. 8388607)
+ 355 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 

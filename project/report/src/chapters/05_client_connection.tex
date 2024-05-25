@@ -1,12 +1,39 @@
 \chapter{Client Connection}\label{ch:client-connection}
 
+The client connection is the part of the system that is responsible for connecting to the server.
+As the server is a scalable service, the client needs to know the address of the server to connect to, which is only known dynamically.
+
+
 \section{Cloud Http Function}\label{sec:cloud-http-functions}
 
-TODO:
-describe that was implemented a cloud function for the client to ask for the gRPC server address,
-since the server could be scaled up or down,
-and the client needs to know the address to connect to the server which is only known dynamically.
+A Google cloud HTTP function was developed to enable clients to discover all available server addresses dynamically.
+This function fetches the IP addresses of running instances within a specified instance group (as a query parameter),
+shuffles these addresses (to enforce a way of load balancing), and returns them to the client in a single string format.
+
+The format of the response used is a simple string, where each address is separated by a semicolon (;).
+
 
 \section{Client Lookup Service}\label{sec:client-lookup-service}
 
-Mention Retry transient fault handling.
+To connect to the server, a client lookup service was implemented.
+This service uses a retry~\cite{retry-pattern} resilience mechanism to handle transient errors that may occur during the connection process. This mechanism helps ensure that the client can connect to the server,
+even if the server is not available at the time of the first connection attempts, as it could be overloaded or starting up.
+
+According to the retry configuration, the client tries to connect to the server up to five times,
+with a three-second wait between each attempt.
+Additionally,
+the retry is set to retry on specific errors that occur during the connection process
+(e.g., no ip address found, connection error, etc.).
+Any other error that occurs during the connection process is not considered a transient error, and as such, the client lookup service does not retry the connection process.
+
+The client lookup service is responsible
+for fetching the server addresses from the previously mentioned Google Cloud HTTP function.
+After a deserialization process, the client lookup service selects the first address to connect to
+(as the addresses are shuffled beforehand).
+With the selected address, the client lookup service tries to connect to the server,
+and waits for a positive response of the connection status.
+If the connection fails, the client lookup service retries the connection process as configured.
+This ensures a resilient connection process between the client and the server.
+
+To enable development mode, an additional flag was added to the client to essentially disable the lookup service,
+and use localhost as the server address instead.
