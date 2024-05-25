@@ -16,19 +16,24 @@ import java.util.logging.Logger;
 
 public class VisionFlowScalingService extends VisionFlowScalingServiceGrpc.VisionFlowScalingServiceImplBase {
     private final Logger logger = Logger.getLogger(VisionFlowScalingService.class.getName());
-    private static final String PROJECT_ID = "cn2324-t1-g05";
     private static final String ZONE = "europe-west3-c";
     private static final List<String> instanceGroups = Arrays.asList(
             "instance-group-labels-app",
             "instance-group-grpc-server"
     );
-    InstanceGroupManagersClient managersClient = InstanceGroupManagersClient.create();
+    private final InstanceGroupManagersClient managersClient;
+    private final String projectId;
 
-    public VisionFlowScalingService() throws IOException {
+    public VisionFlowScalingService(String projectId) throws IOException {
+        this.projectId = projectId;
+        this.managersClient = InstanceGroupManagersClient.create();
     }
 
     @Override
-    public void listManagedInstanceGroups(Empty request, StreamObserver<ManagedInstanceGroupResponse> responseObserver) {
+    public void listManagedInstanceGroups(
+            Empty request,
+            StreamObserver<ManagedInstanceGroupResponse> responseObserver
+    ) {
         if (instanceGroups.isEmpty()) {
             logger.severe("Error listing instance groups, no instance groups found");
             responseObserver.onError(new IllegalStateException("No instance groups found"));
@@ -36,7 +41,7 @@ public class VisionFlowScalingService extends VisionFlowScalingServiceGrpc.Visio
         for (String instanceGroup : instanceGroups) {
             ManagedInstanceGroupResponse responseBuilder = ManagedInstanceGroupResponse
                     .newBuilder()
-                    .setManagedInstanceGroup(instanceGroup)
+                    .setName(instanceGroup)
                     .build();
             responseObserver.onNext(responseBuilder);
         }
@@ -45,13 +50,19 @@ public class VisionFlowScalingService extends VisionFlowScalingServiceGrpc.Visio
 
     @Override
     public void resizeManagedInstanceGroup(
-            ManagedInstanceGroupResizeRequest request, StreamObserver<Empty> responseObserver) {
+            ManagedInstanceGroupResizeRequest request,
+            StreamObserver<Empty> responseObserver
+    ) {
         int newSize = request.getNewSize();
-        String instanceGroupName = request.getManagedInstanceGroupName();
+        String instanceGroupName = request.getName();
+        if (!instanceGroups.contains(instanceGroupName)) {
+            logger.severe("Error resizing instance group, instance group not found");
+            responseObserver.onError(new IllegalStateException("Instance group not found"));
+        }
         logger.info("Resizing instance group " + instanceGroupName + " to " + newSize + " instances");
         try {
             OperationFuture<Operation, Operation> result = managersClient.resizeAsync(
-                    PROJECT_ID,
+                    projectId,
                     ZONE,
                     instanceGroupName,
                     newSize
@@ -67,9 +78,11 @@ public class VisionFlowScalingService extends VisionFlowScalingServiceGrpc.Visio
     }
 
     @Override
-    public void listManagedInstanceGroupVMs(ManagedInstanceNameRequest request, StreamObserver<ManagedInstanceGroupVMResponse> responseObserver) {
-
-        String instanceGroupName = request.getManagedInstanceGroupName();
+    public void listManagedInstanceGroupVMs(
+            ManagedInstanceNameRequest request,
+            StreamObserver<ManagedInstanceGroupVMResponse> responseObserver
+    ) {
+        String instanceGroupName = request.getName();
         if (!instanceGroups.contains(instanceGroupName)) {
             logger.severe("Error listing instance group VMs, instance group not found");
             responseObserver.onError(new IllegalStateException("Instance group not found"));
@@ -77,7 +90,7 @@ public class VisionFlowScalingService extends VisionFlowScalingServiceGrpc.Visio
         ListManagedInstancesInstanceGroupManagersRequest actualRequest =
                 ListManagedInstancesInstanceGroupManagersRequest.newBuilder()
                         .setInstanceGroupManager(instanceGroupName)
-                        .setProject(PROJECT_ID)
+                        .setProject(projectId)
                         .setReturnPartialSuccess(true)
                         .setZone(ZONE)
                         .build();

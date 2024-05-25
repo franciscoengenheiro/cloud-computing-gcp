@@ -6,32 +6,32 @@ import "google/protobuf/empty.proto";
 
 package grpcservice;
 
-//Service for scaling gRPC server instances and image processing application instances
+//Service for scaling VisionFlow instance groups
 service VisionFlowScalingService {
   //list managed instance groups
   rpc listManagedInstanceGroups(google.protobuf.Empty) returns (stream ManagedInstanceGroupResponse);
-  //Decrease or increase the number of image processing application instances
+  //Decrease or increase the number of instances in a managed instance group
   rpc resizeManagedInstanceGroup(ManagedInstanceGroupResizeRequest) returns (google.protobuf.Empty);
-  //List the number of gRPC server instances
+  //list managed instance group VMs
   rpc listManagedInstanceGroupVMs(ManagedInstanceNameRequest) returns (stream ManagedInstanceGroupVMResponse);
 }
 
 //Response message for listing managed instance groups
 message ManagedInstanceGroupResponse {
   //The name of the managed instance group
-  string managedInstanceGroup = 1;
+  string name = 1;
 }
 
 //Request message for listing managed instance group VMs
 message ManagedInstanceNameRequest {
   //The name of the managed instance group
-  string managedInstanceGroupName = 1;
+  string name = 1;
 }
 
 //Request message for resizing managed instance group
 message ManagedInstanceGroupResizeRequest {
   //The name of the managed instance group
-  string managedInstanceGroupName = 1;
+  string name = 1;
   //The number of instances to resize to
   int32 newSize = 2;
 }

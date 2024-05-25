@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -28,12 +27,9 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
     private final FirestoreOperations firestoreOperations;
     private final Logger logger = Logger.getLogger(VisionFlowFunctionalService.class.getName());
 
-    public VisionFlowFunctionalService() {
+    public VisionFlowFunctionalService(String projectId) {
         StorageOptions storageOperations = StorageOptions.getDefaultInstance();
         Storage storage = storageOperations.getService();
-        String projectId = storageOperations.getProjectId();
-        Objects.requireNonNull(projectId, "GOOGLE_APPLICATION_CREDENTIALS environment variable not set");
-        logger.info("Connected to project: " + projectId);
         this.cloudStorageOperations = new CloudStorageOperations(storage);
         this.cloudPubSubOperations = new CloudPubSubOperations(projectId);
         this.firestoreOperations = new FirestoreOperations(storage.getOptions().getCredentials());

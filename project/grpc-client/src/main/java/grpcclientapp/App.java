@@ -37,12 +37,12 @@ public class App {
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingFunctionalServiceStub;
     private static VisionFlowScalingServiceGrpc.VisionFlowScalingServiceStub noBlockingScalingServiceStub;
     private static ManagedChannel channel;
+    private static final boolean developmentMode = true;
 
     public static void main(String[] args) {
         try {
-            boolean developmentMode = true;
             System.out.println("In development mode: " + developmentMode);
-            establishConnectionToServer(developmentMode); // TODO: Change to false for production
+            establishConnectionToServer(); // TODO: Change to false for production
             noBlockingFunctionalServiceStub = VisionFlowFunctionalServiceGrpc.newStub(channel);
             noBlockingScalingServiceStub = VisionFlowScalingServiceGrpc.newStub(channel);
             int option;
@@ -96,7 +96,7 @@ public class App {
     private static final Predicate<Throwable> isConnectionError = e -> e instanceof FailedConnectionException
             || e instanceof NoServerIpException;
 
-    private static void establishConnectionToServer(Boolean developmentMode) {
+    private static void establishConnectionToServer() {
         // Using a retry mechanism to establish connection to the server
         // Retry mechanism will try to connect to the server 5 times with a 3-second wait between each attempt
         RetryConfig config = RetryConfig.custom()
@@ -108,7 +108,7 @@ public class App {
         retry.getEventPublisher().onEvent(event -> logger.info("Retry event: " + event));
 
         CheckedSupplier<ManagedChannel> supplier = Retry.decorateCheckedSupplier(retry, () -> {
-            String serverIp = searchForAServerIp(developmentMode);
+            String serverIp = searchForAServerIp();
             if (serverIp == null) {
                 throw new NoServerIpException("No server IP found");
             }
@@ -142,7 +142,7 @@ public class App {
         }
     }
 
-    private static String searchForAServerIp(Boolean developmentMode) {
+    private static String searchForAServerIp() {
         try {
             if (developmentMode) {
                 return "localhost";
@@ -169,7 +169,7 @@ public class App {
             for (String ip : ips) {
                 System.out.println(ip);
             }
-            return ips[0]; // return the first IP since it's shuffled
+            return ips[0]; // return the first IP since it's already shuffled
         } catch (IOException | InterruptedException e) {
             logger.severe("Error looking up service IP address: " + e.getMessage());
             return null;
@@ -249,7 +249,7 @@ public class App {
         StreamObserver<ManagedInstanceGroupResponse> responseStream = new StreamObserver<>() {
             @Override
             public void onNext(ManagedInstanceGroupResponse managedInstanceGroupResponse) {
-                System.out.println("Managed Instance Group: " + managedInstanceGroupResponse.getManagedInstanceGroup());
+                System.out.println("Managed Instance Group: " + managedInstanceGroupResponse.getName());
             }
 
             @Override
@@ -269,7 +269,7 @@ public class App {
         String instanceGroupName = readString("Enter the instance group name to resize (e.g., instance-group-labels-app): ");
         int newSize = readInt("Enter the new size for the instance group: (e.g., 3): ");
         ManagedInstanceGroupResizeRequest request = ManagedInstanceGroupResizeRequest.newBuilder()
-                .setManagedInstanceGroupName(instanceGroupName)
+                .setName(instanceGroupName)
                 .setNewSize(newSize)
                 .build();
         StreamObserver<Empty> responseStream = new StreamObserver<>() {
@@ -294,7 +294,7 @@ public class App {
     private static void listManagedInstanceGroupVMs() {
         String instanceGroupName = readString("Enter the instance group name to list VMs (e.g., instance-group-labels-app): ");
         ManagedInstanceNameRequest request = ManagedInstanceNameRequest.newBuilder()
-                .setManagedInstanceGroupName(instanceGroupName)
+                .setName(instanceGroupName)
                 .build();
         StreamObserver<ManagedInstanceGroupVMResponse> responseStream = new StreamObserver<>() {
             @Override
