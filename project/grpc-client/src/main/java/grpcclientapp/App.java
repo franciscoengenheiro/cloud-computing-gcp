@@ -2,10 +2,13 @@ package grpcclientapp;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import grpcclientapp.exceptions.FailedConnectionException;
+import grpcclientapp.exceptions.NoServerIpException;
 import grpcclientapp.observers.DownloadImageResponseStream;
 import grpcclientapp.observers.GetFileNamesResponseStream;
 import grpcclientapp.observers.GetImageCharacteristicsResponseStream;
 import grpcclientapp.observers.UploadImageResponseStream;
+import io.github.resilience4j.core.functions.CheckedSupplier;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.grpc.ManagedChannel;
@@ -24,12 +27,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Scanner;
-import java.util.function.Supplier;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 public class App {
     private static final int SERVER_PORT = 8000;
-    private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "TODO";
+    private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "https://europe-west1-cn2324-t1-g04.cloudfunctions.net/get-ips";
     private static final Logger logger = Logger.getLogger(App.class.getName());
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingFunctionalServiceStub;
     private static VisionFlowScalingServiceGrpc.VisionFlowScalingServiceStub noBlockingScalingServiceStub;
@@ -90,21 +93,24 @@ public class App {
         }
     }
 
+    private static final Predicate<Throwable> isConnectionError = e -> e instanceof FailedConnectionException
+            || e instanceof NoServerIpException;
+
     private static void establishConnectionToServer(Boolean developmentMode) {
         // Using a retry mechanism to establish connection to the server
         // Retry mechanism will try to connect to the server 5 times with a 3-second wait between each attempt
         RetryConfig config = RetryConfig.custom()
                 .maxAttempts(5)
-                .retryExceptions(IllegalStateException.class)
+                .retryOnException(isConnectionError)
                 .waitDuration(Duration.ofSeconds(3))
                 .build();
         Retry retry = Retry.of("connect-to-server", config);
         retry.getEventPublisher().onEvent(event -> logger.info("Retry event: " + event));
 
-        Supplier<ManagedChannel> supplier = Retry.decorateSupplier(retry, () -> {
+        CheckedSupplier<ManagedChannel> supplier = Retry.decorateCheckedSupplier(retry, () -> {
             String serverIp = searchForAServerIp(developmentMode);
             if (serverIp == null) {
-                throw new IllegalStateException("No server IPs found");
+                throw new NoServerIpException("No server IP found");
             }
 
             channel = ManagedChannelBuilder.forAddress(serverIp, SERVER_PORT)
@@ -114,7 +120,7 @@ public class App {
             logger.info("Trying to establish connection to server...");
 
             do {
-                // get current state of the channel
+                // get the current state of the channel
                 switch (channel.getState(true)) {
                     case CONNECTING:
                     case READY:
@@ -122,7 +128,7 @@ public class App {
                         return channel;
                     case TRANSIENT_FAILURE:
                     case SHUTDOWN:
-                        throw new IllegalStateException("Failed to connect to server at: " + serverIp);
+                        throw new FailedConnectionException("Failed to connect to server at: " + serverIp);
                     case IDLE:
                     default:
                 }
@@ -131,7 +137,7 @@ public class App {
 
         try {
             channel = supplier.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.severe("Error establishing connection to server: " + e.getMessage());
         }
     }

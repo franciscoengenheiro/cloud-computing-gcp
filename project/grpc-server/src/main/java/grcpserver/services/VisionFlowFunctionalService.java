@@ -1,6 +1,5 @@
 package grcpserver.services;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
@@ -15,7 +14,6 @@ import servicestubs.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -60,6 +58,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                 }
                 byte[] chunk = request.getChunk().toByteArray();
                 try {
+                    // TODO: send to blob storage
                     outputStream.write(chunk); // append chunk to the output stream
                 } catch (IOException e) {
                     onError(e);
@@ -88,7 +87,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                     cloudPubSubOperations.publishMessage(blobName, imageName, bucketName, blobName, translationLang);
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    onError(e);
                 }
             }
         };
@@ -108,7 +107,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe("Error downloading image: " + e.getMessage());
         }
     }
 
@@ -128,7 +127,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe("Error getting image characteristics: " + e.getMessage());
         }
     }
 
@@ -151,7 +150,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe("Error getting file names by characteristic: " + e.getMessage());
         }
     }
 

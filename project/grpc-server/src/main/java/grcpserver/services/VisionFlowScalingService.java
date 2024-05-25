@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class VisionFlowScalingService extends VisionFlowScalingServiceGrpc.VisionFlowScalingServiceImplBase {
     private final Logger logger = Logger.getLogger(VisionFlowScalingService.class.getName());
     private static final String PROJECT_ID = "cn2324-t1-g05";
-    private static final String ZONE = "europe-west1-b";
+    private static final String ZONE = "europe-west3-c";
     private static final List<String> instanceGroups = Arrays.asList(
             "instance-group-labels-app",
             "instance-group-grpc-server"
