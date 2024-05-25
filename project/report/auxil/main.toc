@@ -17,6 +17,5 @@
 \contentsline {chapter}{\numberline {5}Deployment}{9}{}%
 \contentsline {section}{\numberline {5.1}Virtual Machine Templates}{9}{}%
 \contentsline {chapter}{\numberline {6}Project Structure}{10}{}%
-\contentsline {section}{\numberline {6.1}Maven Modules}{10}{}%
 \contentsline {chapter}{\numberline {7}Conclusion}{11}{}%
 \contentsline {chapter}{References}{11}{}%

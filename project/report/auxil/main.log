@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  25 MAY 2024 23:38
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  25 MAY 2024 23:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -318,6 +318,9 @@ Chapter 5.
 
 ]
 Chapter 6.
+
+LaTeX Warning: Citation `maven' on page 10 undefined on input line 3.
+
 ) (chapters/07_conclusion.tex [10
 
 ]
@@ -356,9 +359,9 @@ eX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\franc\AppData\Loca
 l\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk><C:/Users/franc/AppData
 /Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
 Output written on C:/Users\franc\IdeaProjects\CN-2324-G04\project\report\out\ma
-in.pdf (12 pages, 397011 bytes).
+in.pdf (12 pages, 397866 bytes).
 PDF statistics:
- 357 PDF objects out of 1000 (max. 8388607)
+ 358 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
