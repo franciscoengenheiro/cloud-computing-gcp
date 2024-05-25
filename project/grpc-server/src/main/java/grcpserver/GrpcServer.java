@@ -1,13 +1,14 @@
 package grcpserver;
 
 import grcpserver.services.VisionFlowFunctionalService;
+import grcpserver.services.VisionFlowScalingService;
 import io.grpc.ServerBuilder;
 
 import java.util.logging.Logger;
 
 public class GrpcServer {
     private static int svcPort = 8000;
-    private static Logger logger = Logger.getLogger(GrpcServer.class.getName());
+    private static final Logger logger = Logger.getLogger(GrpcServer.class.getName());
 
     public static void main(String[] args) {
         try {
@@ -16,7 +17,7 @@ public class GrpcServer {
                     // Add one or more services.
                     // The Server can host many services in same TCP/IP port
                     .addService(new VisionFlowFunctionalService())
-                    // TODO: add more services here
+                    .addService(new VisionFlowScalingService())
                     .build();
             svc.start();
             logger.info("Server started, listening on " + svcPort);
@@ -26,7 +27,7 @@ public class GrpcServer {
             // Waits for the server to become terminated
             svc.awaitTermination();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.severe("Server failed to start: " + ex.getMessage());
         }
     }
 

@@ -1,11 +1,7 @@
 package grpcclientapp;
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.compute.v1.InstanceGroupManagersClient;
-import com.google.cloud.compute.v1.ListManagedInstancesInstanceGroupManagersRequest;
-import com.google.cloud.compute.v1.ManagedInstance;
-import com.google.cloud.compute.v1.Operation;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 import grpcclientapp.observers.DownloadImageResponseStream;
 import grpcclientapp.observers.GetFileNamesResponseStream;
 import grpcclientapp.observers.GetImageCharacteristicsResponseStream;
@@ -28,27 +24,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class App {
     private static final int SERVER_PORT = 8000;
-    private static final String PROJECT_ID = "cn2324-t1-g05";
-    private static final String ZONE = "europe-west1-b";
     private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "TODO";
-    private static final String LABELS_APP_INSTANCE_GROUP_NAME = "instance-group-labels-app";
-    private static final String GRPC_SERVER_INSTANCE_GROUP_NAME = "instance-group-grpc-server";
     private static final Logger logger = Logger.getLogger(App.class.getName());
-    private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingStub;
+    private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingFunctionalServiceStub;
+    private static VisionFlowScalingServiceGrpc.VisionFlowScalingServiceStub noBlockingScalingServiceStub;
     private static ManagedChannel channel;
-    private static InstanceGroupManagersClient managersClient;
 
     public static void main(String[] args) {
         try {
-            establishConnectionToServer();
-            managersClient = InstanceGroupManagersClient.create();
-            noBlockingStub = VisionFlowFunctionalServiceGrpc.newStub(channel);
+            boolean developmentMode = true;
+            System.out.println("In development mode: " + developmentMode);
+            establishConnectionToServer(developmentMode); // TODO: Change to false for production
+            noBlockingFunctionalServiceStub = VisionFlowFunctionalServiceGrpc.newStub(channel);
+            noBlockingScalingServiceStub = VisionFlowScalingServiceGrpc.newStub(channel);
             int option;
             do {
                 System.out.println("\n######## MENU ##########");
@@ -56,25 +49,40 @@ public class App {
                 System.out.println("2: Download Image");
                 System.out.println("3: Get Image Characteristics");
                 System.out.println("4: Get Images by Date and Characteristic");
-                System.out.println("5: List gRPC Server VM instances");
-                System.out.println("6: Resize gRPC Server VM instances");
-                System.out.println("7: List Labels App VM instances");
-                System.out.println("8: Resize Labels App VM instances");
+                System.out.println("5: List Managed Instance Groups");
+                System.out.println("6: List Managed Instance Group VMs");
+                System.out.println("7: Resize Managed Instance Group");
                 System.out.println("0: Exit");
                 System.out.println("########################");
-                System.out.print("Enter an Option: ");
+                System.out.print("Enter an Option: \n");
                 option = readInt(null);
                 switch (option) {
-                    case 1: uploadImage(); break;
-                    case 2: downloadImage(); break;
-                    case 3: getImageCharacteristics(); break;
-                    case 4: getImagesByDateAndCharacteristic(); break;
-                    case 5: listManagedInstanceGroupVMs(GRPC_SERVER_INSTANCE_GROUP_NAME); break;
-                    case 6: resizeManagedInstanceGroup(GRPC_SERVER_INSTANCE_GROUP_NAME); break;
-                    case 7: listManagedInstanceGroupVMs(LABELS_APP_INSTANCE_GROUP_NAME); break;
-                    case 8: resizeManagedInstanceGroup(LABELS_APP_INSTANCE_GROUP_NAME); break;
-                    case 0: System.out.println("Exiting..."); break;
-                    default: System.out.println("Invalid option. Please try again.");
+                    case 1:
+                        uploadImage();
+                        break;
+                    case 2:
+                        downloadImage();
+                        break;
+                    case 3:
+                        getImageCharacteristics();
+                        break;
+                    case 4:
+                        getImagesByDateAndCharacteristic();
+                        break;
+                    case 5:
+                        listManagedInstanceGroups();
+                        break;
+                    case 6:
+                        listManagedInstanceGroupVMs();
+                        break;
+                    case 7:
+                        resizeManagedInstanceGroup();
+                        break;
+                    case 0:
+                        System.out.println("Exiting...");
+                        break;
+                    default:
+                        System.out.println("Invalid option. Please try again.");
                 }
             } while (option != 0);
         } catch (Exception e) {
@@ -82,7 +90,7 @@ public class App {
         }
     }
 
-    private static void establishConnectionToServer() {
+    private static void establishConnectionToServer(Boolean developmentMode) {
         // Using a retry mechanism to establish connection to the server
         // Retry mechanism will try to connect to the server 5 times with a 3-second wait between each attempt
         RetryConfig config = RetryConfig.custom()
@@ -94,7 +102,7 @@ public class App {
         retry.getEventPublisher().onEvent(event -> logger.info("Retry event: " + event));
 
         Supplier<ManagedChannel> supplier = Retry.decorateSupplier(retry, () -> {
-            String serverIp = searchForAServerIp();
+            String serverIp = searchForAServerIp(developmentMode);
             if (serverIp == null) {
                 throw new IllegalStateException("No server IPs found");
             }
@@ -108,6 +116,7 @@ public class App {
             do {
                 // get current state of the channel
                 switch (channel.getState(true)) {
+                    case CONNECTING:
                     case READY:
                         logger.info("Successfully connected to server at: " + serverIp);
                         return channel;
@@ -115,7 +124,6 @@ public class App {
                     case SHUTDOWN:
                         throw new IllegalStateException("Failed to connect to server at: " + serverIp);
                     case IDLE:
-                    case CONNECTING:
                     default:
                 }
             } while (true);
@@ -128,8 +136,11 @@ public class App {
         }
     }
 
-    private static String searchForAServerIp() {
+    private static String searchForAServerIp(Boolean developmentMode) {
         try {
+            if (developmentMode) {
+                return "localhost";
+            }
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(CLOUD_FUNCTION_IP_LOOKUP_URL))
@@ -166,7 +177,7 @@ public class App {
                 .build();
         StreamObserver<GetImageCharacteristicsResponse> responseStream =
                 new GetImageCharacteristicsResponseStream();
-        noBlockingStub.getImageCharacteristics(request, responseStream);
+        noBlockingFunctionalServiceStub.getImageCharacteristics(request, responseStream);
     }
 
     private static void getImagesByDateAndCharacteristic() {
@@ -180,14 +191,14 @@ public class App {
                 .build();
         StreamObserver<GetFileNamesResponse> responseStream =
                 new GetFileNamesResponseStream();
-        noBlockingStub.getFileNamesByCharacteristic(request, responseStream);
+        noBlockingFunctionalServiceStub.getFileNamesByCharacteristic(request, responseStream);
     }
 
     private static void uploadImage() throws IOException {
         String imagePath = readString("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
         String translationlang = readString("Enter the language to translate the image to (e.g., pt, fr, es): ");
         StreamObserver<UploadImageResponse> responseStream = new UploadImageResponseStream();
-        StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingStub.uploadImage(responseStream);
+        StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingFunctionalServiceStub.uploadImage(responseStream);
         // Read bytes from file and send to server
         final Path path = Paths.get(imagePath);
         // parse path to get file name (e.g. /path/to/image.jpg -> image)
@@ -225,35 +236,77 @@ public class App {
                 .setPath(dir)
                 .build();
         StreamObserver<DownloadImageResponse> responseStream = new DownloadImageResponseStream(imageDownloadData);
-        noBlockingStub.downloadImage(imageDownloadData, responseStream);
+        noBlockingFunctionalServiceStub.downloadImage(imageDownloadData, responseStream);
     }
 
-    static void listManagedInstanceGroupVMs(String instanceGroupName) {
-        ListManagedInstancesInstanceGroupManagersRequest request =
-                ListManagedInstancesInstanceGroupManagersRequest.newBuilder()
-                        .setInstanceGroupManager(instanceGroupName)
-                        .setProject(PROJECT_ID)
-                        .setReturnPartialSuccess(true)
-                        .setZone(ZONE)
-                        .build();
+    private static void listManagedInstanceGroups() {
+        StreamObserver<ManagedInstanceGroupResponse> responseStream = new StreamObserver<>() {
+            @Override
+            public void onNext(ManagedInstanceGroupResponse managedInstanceGroupResponse) {
+                System.out.println("Managed Instance Group: " + managedInstanceGroupResponse.getManagedInstanceGroup());
+            }
 
-        System.out.println("Instances of instance group: " + instanceGroupName);
-        for (ManagedInstance instance :
-                managersClient.listManagedInstances(request).iterateAll()) {
-            System.out.println(instance.getInstance() + " with STATUS = " + instance.getInstanceStatus());
-        }
+            @Override
+            public void onError(Throwable throwable) {
+                logger.severe("Error listing managed instance groups: " + throwable.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                logger.info("Listed managed instance groups");
+            }
+        };
+        noBlockingScalingServiceStub.listManagedInstanceGroups(Empty.newBuilder().build(), responseStream);
     }
 
-    static void resizeManagedInstanceGroup(String instanceGroupName) throws InterruptedException, ExecutionException {
-        int newSize = readInt("Enter the new size for " + instanceGroupName + ": ");
-        OperationFuture<Operation, Operation> result = managersClient.resizeAsync(
-                PROJECT_ID,
-                ZONE,
-                instanceGroupName,
-                newSize
-        );
-        Operation oper = result.get();
-        System.out.println("Resizing with status " + oper.getStatus());
+    private static void resizeManagedInstanceGroup() {
+        String instanceGroupName = readString("Enter the instance group name to resize (e.g., instance-group-labels-app): ");
+        int newSize = readInt("Enter the new size for the instance group: (e.g., 3): ");
+        ManagedInstanceGroupResizeRequest request = ManagedInstanceGroupResizeRequest.newBuilder()
+                .setManagedInstanceGroupName(instanceGroupName)
+                .setNewSize(newSize)
+                .build();
+        StreamObserver<Empty> responseStream = new StreamObserver<>() {
+            @Override
+            public void onNext(Empty value) {
+                System.out.println("Resizing instance group " + instanceGroupName + " to " + newSize + " instances");
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                System.out.println("Error resizing instance group: " + t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Resizing instance group completed");
+            }
+        };
+        noBlockingScalingServiceStub.resizeManagedInstanceGroup(request, responseStream);
+    }
+
+    private static void listManagedInstanceGroupVMs() {
+        String instanceGroupName = readString("Enter the instance group name to list VMs (e.g., instance-group-labels-app): ");
+        ManagedInstanceNameRequest request = ManagedInstanceNameRequest.newBuilder()
+                .setManagedInstanceGroupName(instanceGroupName)
+                .build();
+        StreamObserver<ManagedInstanceGroupVMResponse> responseStream = new StreamObserver<>() {
+            @Override
+            public void onNext(ManagedInstanceGroupVMResponse managedInstanceGroupVMResponse) {
+                System.out.println("VM Name: " + managedInstanceGroupVMResponse.getName() + "with status: " + managedInstanceGroupVMResponse.getStatus());
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                logger.severe("Error listing managed instance group VMs: " + throwable.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                logger.info("Listed managed instance group VMs");
+            }
+        };
+        noBlockingScalingServiceStub.listManagedInstanceGroupVMs(request, responseStream);
     }
 
     private static String readString(String msg) {

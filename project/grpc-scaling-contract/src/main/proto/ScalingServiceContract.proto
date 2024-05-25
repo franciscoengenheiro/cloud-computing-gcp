@@ -8,20 +8,38 @@ package grpcservice;
 
 //Service for scaling gRPC server instances and image processing application instances
 service VisionFlowScalingService {
-  //Decrease or increase the number of gRPC server instances
-  rpc scaleGrcpServer(GrpcScalingRequest) returns (google.protobuf.Empty);
+  //list managed instance groups
+  rpc listManagedInstanceGroups(google.protobuf.Empty) returns (stream ManagedInstanceGroupResponse);
   //Decrease or increase the number of image processing application instances
-  rpc scaleImageProcessing(ImageProcessingScalingRequest) returns (google.protobuf.Empty);
+  rpc resizeManagedInstanceGroup(ManagedInstanceGroupResizeRequest) returns (google.protobuf.Empty);
+  //List the number of gRPC server instances
+  rpc listManagedInstanceGroupVMs(ManagedInstanceNameRequest) returns (stream ManagedInstanceGroupVMResponse);
 }
 
-//Messages related to gRPC server instances scaling
-message GrpcScalingRequest {
-  //Number of instances to scale up or down
-  int32 instanceCount = 1;
+//Response message for listing managed instance groups
+message ManagedInstanceGroupResponse {
+  //The name of the managed instance group
+  string managedInstanceGroup = 1;
 }
 
-//Messages related to image processing application instances scaling
-message ImageProcessingScalingRequest {
-  //Number of instances to scale up or down
-  int32 instanceCount = 1;
+//Request message for listing managed instance group VMs
+message ManagedInstanceNameRequest {
+  //The name of the managed instance group
+  string managedInstanceGroupName = 1;
+}
+
+//Request message for resizing managed instance group
+message ManagedInstanceGroupResizeRequest {
+  //The name of the managed instance group
+  string managedInstanceGroupName = 1;
+  //The number of instances to resize to
+  int32 newSize = 2;
+}
+
+//Response message for listing managed instance group VMs
+message ManagedInstanceGroupVMResponse {
+  //The name of the VM instance
+  string name = 1;
+  //The status of the VM instance
+  string status = 2;
 }
