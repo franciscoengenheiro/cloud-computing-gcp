@@ -1,6 +1,8 @@
 package grcpserver.services;
 
+import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.protobuf.ByteString;
@@ -14,6 +16,7 @@ import servicestubs.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +29,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
     private final CloudPubSubOperations cloudPubSubOperations;
     private final FirestoreOperations firestoreOperations;
     private final Logger logger = Logger.getLogger(VisionFlowFunctionalService.class.getName());
+    private final Storage storage;
 
     public VisionFlowFunctionalService(String projectId) {
         StorageOptions storageOperations = StorageOptions.getDefaultInstance();
@@ -33,13 +37,13 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
         this.cloudStorageOperations = new CloudStorageOperations(storage);
         this.cloudPubSubOperations = new CloudPubSubOperations(projectId);
         this.firestoreOperations = new FirestoreOperations(storage.getOptions().getCredentials());
+        this.storage = StorageOptions.getDefaultInstance().getService();
     }
 
     @Override
     public StreamObserver<UploadImageRequest> uploadImage(StreamObserver<UploadImageResponse> responseObserver) {
         return new StreamObserver<>() {
-
-            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); // To accumulate image bytes
+            WriteChannel writer;
             String contentType;
             String imageName;
             String translationLang;
@@ -51,11 +55,15 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                     contentType = request.getContentType();
                     imageName = request.getName();
                     translationLang = request.getTranslationLang();
+                    BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, imageName).setContentType(contentType).build();
+                    writer = storage.writer(blobInfo);
                 }
                 byte[] chunk = request.getChunk().toByteArray();
                 try {
-                    // TODO: send to blob storage
-                    outputStream.write(chunk); // append chunk to the output stream
+                    ByteBuffer buffer = ByteBuffer.wrap(chunk);
+                    while (buffer.hasRemaining()) {
+                        writer.write(buffer);
+                    }
                 } catch (IOException e) {
                     onError(e);
                 }
@@ -72,16 +80,16 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                 UUID requestId = UUID.randomUUID();
                 String blobName = imageName + "#" + requestId;
                 // All image bytes have been received, get the accumulated image bytes
-                byte[] imageData = outputStream.toByteArray();
                 try {
-                    cloudStorageOperations.uploadBlobToBucket(bucketName, blobName, imageData, contentType);
                     UploadImageResponse response = UploadImageResponse.newBuilder()
                             .setId(blobName)
                             .build();
                     responseObserver.onNext(response);
                     responseObserver.onCompleted();
-                    cloudPubSubOperations.publishMessage(blobName, imageName, bucketName, blobName, translationLang);
 
+                    writer.close();
+
+                    cloudPubSubOperations.publishMessage(blobName, imageName, bucketName, blobName, translationLang);
                 } catch (Exception e) {
                     onError(e);
                 }
