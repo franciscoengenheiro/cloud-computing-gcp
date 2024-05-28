@@ -33,11 +33,12 @@ public class App {
     private static final int SERVER_PORT = 8000;
     private static final String DEFAULT_SERVER_ADDRESS = "localhost"; // "localhost" or "34.141.73.96" (GCP VM external IP)
     private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "https://europe-west3-cn2324-t1-g04.cloudfunctions.net/funcHttp?instance-group=instance-group-grpc-server";
-    private static final boolean developmentMode = false;
+    private static final boolean developmentMode = true;
     private static final Logger logger = Logger.getLogger(App.class.getName());
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingFunctionalServiceStub;
     private static VisionFlowScalingServiceGrpc.VisionFlowScalingServiceStub noBlockingScalingServiceStub;
     private static ManagedChannel channel;
+    private static final String[] languages = {"pt", "fr", "es", "de", "it", "ru", "ja", "ko", "zh"};
 
     public static void main(String[] args) {
         try {
@@ -199,7 +200,7 @@ public class App {
 
     private static void uploadImage() throws IOException {
         String imagePath = readString("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
-        String translationlang = readString("Enter the language to translate the image to (e.g., pt, fr, es): ");
+        String translationlang = readString("Enter the language to translate the image to " + String.join(", ", languages) + ": ");
         StreamObserver<UploadImageResponse> responseStream = new UploadImageResponseStream();
         StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingFunctionalServiceStub.uploadImage(responseStream);
         // Read bytes from file and send to server

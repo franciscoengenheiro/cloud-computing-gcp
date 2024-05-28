@@ -14,8 +14,9 @@ import grcpserver.services.firestore.ProcessedImageData;
 import io.grpc.stub.StreamObserver;
 import servicestubs.*;
 
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,6 +48,7 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             String contentType;
             String imageName;
             String translationLang;
+            String blobName;
 
             @Override
             public void onNext(UploadImageRequest request) {
@@ -55,14 +57,24 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                     contentType = request.getContentType();
                     imageName = request.getName();
                     translationLang = request.getTranslationLang();
-                    BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, imageName).setContentType(contentType).build();
+                    UUID requestId = UUID.randomUUID();
+                    blobName = imageName + "#" + requestId;
+                    BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, blobName).setContentType(contentType).build();
+                    logger.info("Blob info: " + blobInfo);
                     writer = storage.writer(blobInfo);
                 }
-                byte[] chunk = request.getChunk().toByteArray();
-                try {
-                    ByteBuffer buffer = ByteBuffer.wrap(chunk);
-                    while (buffer.hasRemaining()) {
-                        writer.write(buffer);
+                byte[] chunk = new byte[1024];
+
+                try (InputStream imageStream = new ByteArrayInputStream(request.getChunk().toByteArray())) {
+                    logger.info("Uploading image chunk");
+                    int bytesRead;
+                    while ((bytesRead = imageStream.read(chunk)) >= 0) {
+                        try {
+                            writer.write(ByteBuffer.wrap(chunk, 0, bytesRead));
+                        } catch (IOException e) {
+                            logger.severe("Error uploading image chunk: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 } catch (IOException e) {
                     onError(e);
@@ -77,8 +89,6 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
 
             @Override
             public void onCompleted() {
-                UUID requestId = UUID.randomUUID();
-                String blobName = imageName + "#" + requestId;
                 // All image bytes have been received, get the accumulated image bytes
                 try {
                     UploadImageResponse response = UploadImageResponse.newBuilder()
@@ -86,9 +96,8 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
                             .build();
                     responseObserver.onNext(response);
                     responseObserver.onCompleted();
-
-                    writer.close();
-
+                    if (writer != null)
+                        writer.close();
                     cloudPubSubOperations.publishMessage(blobName, imageName, bucketName, blobName, translationLang);
                 } catch (Exception e) {
                     onError(e);
