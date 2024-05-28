@@ -31,14 +31,13 @@ import java.util.logging.Logger;
 
 public class App {
     private static final int SERVER_PORT = 8000;
-    // without using the http cloud function for IP lookup, use the default server address
-    private static final String DEFAULT_SERVER_ADDRESS = "34.159.59.109"; // "localhost";
-    private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "https://europe-west1-cn2324-t1-g04.cloudfunctions.net/get-ips";
+    private static final String DEFAULT_SERVER_ADDRESS = "localhost"; // "localhost" or "34.141.73.96" (GCP VM external IP)
+    private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "https://europe-west3-cn2324-t1-g04.cloudfunctions.net/funcHttp?instance-group=instance-group-grpc-server";
+    private static final boolean developmentMode = false;
     private static final Logger logger = Logger.getLogger(App.class.getName());
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingFunctionalServiceStub;
     private static VisionFlowScalingServiceGrpc.VisionFlowScalingServiceStub noBlockingScalingServiceStub;
     private static ManagedChannel channel;
-    private static final boolean developmentMode = true;
 
     public static void main(String[] args) {
         try {
@@ -58,8 +57,7 @@ public class App {
                 System.out.println("7: Resize Managed Instance Group");
                 System.out.println("0: Exit");
                 System.out.println("########################");
-                System.out.print("Enter an Option: \n");
-                option = readInt(null);
+                option = readInt("Enter an Option: \n");
                 switch (option) {
                     case 1:
                         uploadImage();
@@ -95,7 +93,7 @@ public class App {
             if (channel != null) {
                 channel.shutdown();
             }
-            logger.info("Channel shutdown");
+            logger.info("Shutting down client...");
         }
     }
 
@@ -103,7 +101,7 @@ public class App {
         // Using a retry mechanism to establish connection to the server
         // Retry mechanism will try to connect to the server 5 times with a 3-second wait between each attempt
         RetryConfig config = RetryConfig.custom()
-                .maxAttempts(4) // 4 attempts (1 initial + 3 retries)
+                .maxAttempts(5) // 5 attempts (1 initial + 4 retries)
                 // Wait 1 second before the first retry, then 2 seconds, 4 seconds, 8 seconds, etc.
                 .intervalFunction(IntervalFunction.ofExponentialBackoff(1000, 2))
                 .build();
@@ -265,7 +263,7 @@ public class App {
     }
 
     private static void resizeManagedInstanceGroup() {
-        String instanceGroupName = readString("Enter the instance group name to resize (e.g., instance-group-labels-app): ");
+        String instanceGroupName = readString("Enter the instance group name to resize (e.g., instance-group-grpc-server): ");
         int newSize = readInt("Enter the new size for the instance group: (e.g., 3): ");
         ManagedInstanceGroupResizeRequest request = ManagedInstanceGroupResizeRequest.newBuilder()
                 .setName(instanceGroupName)
@@ -291,7 +289,7 @@ public class App {
     }
 
     private static void listManagedInstanceGroupVMs() {
-        String instanceGroupName = readString("Enter the instance group name to list VMs (e.g., instance-group-labels-app): ");
+        String instanceGroupName = readString("Enter the instance group name to list VMs (e.g., instance-group-grpc-server): ");
         ManagedInstanceNameRequest request = ManagedInstanceNameRequest.newBuilder()
                 .setName(instanceGroupName)
                 .build();

@@ -16,7 +16,7 @@ public class Entrypoint implements HttpFunction {
 
     private final Logger logger = Logger.getLogger(Entrypoint.class.getName());
     private static final String PROJECT_ID = "cn2324-t1-g04";
-    private static final String ZONE = "europe-west1-b";
+    private static final String ZONE = "europe-west3-c";
 
     @Override
     public void service(HttpRequest request, HttpResponse response) throws Exception {
@@ -30,11 +30,14 @@ public class Entrypoint implements HttpFunction {
                     .map(instance -> instance.getNetworkInterfaces(0).getAccessConfigs(0).getNatIP())
                     .collect(Collectors.toList());
 
+            logger.info("IP addresses: " + ips);
             // Shuffle the list of IP addresses
             Collections.shuffle(ips);
 
             // Join the shuffled IP addresses into a single string and write to the response
-            writer.write(String.join(";", ips));
+            String output = String.join(";", ips);
+            logger.info("Output: " + output);
+            writer.write(output);
         }
     }
 }
