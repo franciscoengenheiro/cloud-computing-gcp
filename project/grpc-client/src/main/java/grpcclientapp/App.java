@@ -8,6 +8,7 @@ import grpcclientapp.observers.DownloadImageResponseStream;
 import grpcclientapp.observers.GetFileNamesResponseStream;
 import grpcclientapp.observers.GetImageCharacteristicsResponseStream;
 import grpcclientapp.observers.UploadImageResponseStream;
+import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.core.functions.CheckedSupplier;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
@@ -25,13 +26,13 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Scanner;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 public class App {
     private static final int SERVER_PORT = 8000;
+    // without using the http cloud function for IP lookup, use the default server address
+    private static final String DEFAULT_SERVER_ADDRESS = "34.159.59.109"; // "localhost";
     private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "https://europe-west1-cn2324-t1-g04.cloudfunctions.net/get-ips";
     private static final Logger logger = Logger.getLogger(App.class.getName());
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingFunctionalServiceStub;
@@ -88,21 +89,23 @@ public class App {
                         System.out.println("Invalid option. Please try again.");
                 }
             } while (option != 0);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.severe("Error: " + e.getMessage());
+        } finally {
+            if (channel != null) {
+                channel.shutdown();
+            }
+            logger.info("Channel shutdown");
         }
     }
 
-    private static final Predicate<Throwable> isConnectionError = e -> e instanceof FailedConnectionException
-            || e instanceof NoServerIpException;
-
-    private static void establishConnectionToServer() {
+    private static void establishConnectionToServer() throws Throwable {
         // Using a retry mechanism to establish connection to the server
         // Retry mechanism will try to connect to the server 5 times with a 3-second wait between each attempt
         RetryConfig config = RetryConfig.custom()
-                .maxAttempts(5)
-                .retryOnException(isConnectionError)
-                .waitDuration(Duration.ofSeconds(3))
+                .maxAttempts(4) // 4 attempts (1 initial + 3 retries)
+                // Wait 1 second before the first retry, then 2 seconds, 4 seconds, 8 seconds, etc.
+                .intervalFunction(IntervalFunction.ofExponentialBackoff(1000, 2))
                 .build();
         Retry retry = Retry.of("connect-to-server", config);
         retry.getEventPublisher().onEvent(event -> logger.info("Retry event: " + event));
@@ -135,17 +138,13 @@ public class App {
             } while (true);
         });
 
-        try {
-            channel = supplier.get();
-        } catch (Throwable e) {
-            logger.severe("Error establishing connection to server: " + e.getMessage());
-        }
+        channel = supplier.get();
     }
 
     private static String searchForAServerIp() {
         try {
             if (developmentMode) {
-                return "localhost";
+                return DEFAULT_SERVER_ADDRESS;
             }
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()

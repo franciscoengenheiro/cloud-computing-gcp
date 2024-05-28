@@ -1,4 +1,4 @@
-package receiver;
+package app.receiver;
 
 @FunctionalInterface
 public interface LoggingMessageHandlerFunction {

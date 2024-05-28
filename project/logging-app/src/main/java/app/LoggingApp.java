@@ -1,7 +1,9 @@
-import services.firestore.LoggingFirestoreOperations;
-import services.firestore.UnProcessedImageData;
-import services.pubsub.GooglePubSub;
-import services.pubsub.LoggingGooglePubSubService;
+package app;
+
+import app.services.firestore.LoggingFirestoreOperations;
+import app.services.firestore.UnProcessedImageData;
+import app.services.pubsub.GooglePubSub;
+import app.services.pubsub.LoggingGooglePubSubService;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -21,7 +23,7 @@ public class LoggingApp {
     }
 
     public static void main(String[] args) {
-        logger.info("LoggingApp started");
+        logger.info("app.LoggingApp started");
         LoggingGooglePubSubService labelsPubSubService = new LoggingGooglePubSubService(new GooglePubSub());
         labelsPubSubService.subscribe(PROJECT_ID, SUBSCRIPTION_ID,
                 (String requestId, String imageName, String bucketName, String blobName, String translationLang) -> {

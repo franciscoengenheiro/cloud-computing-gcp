@@ -1,7 +1,7 @@
-package services.pubsub;
+package app.services.pubsub;
 
-import receiver.LoggingMessageHandlerFunction;
-import receiver.LoggingMessageReceiveHandler;
+import app.receiver.LoggingMessageHandlerFunction;
+import app.receiver.LoggingMessageReceiveHandler;
 
 public class LoggingGooglePubSubService {
 

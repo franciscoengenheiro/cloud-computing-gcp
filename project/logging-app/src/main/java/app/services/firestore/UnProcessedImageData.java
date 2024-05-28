@@ -1,4 +1,4 @@
-package services.firestore;
+package app.services.firestore;
 
 public class UnProcessedImageData {
     private final String id;

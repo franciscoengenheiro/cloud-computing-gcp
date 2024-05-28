@@ -60,7 +60,7 @@
                     </descriptors>
                     <archive>
                         <manifest>
-                            <mainClass>grcpserver.services.labels.LoggingApp</mainClass>
+                            <mainClass>grcpserver.GrpcServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

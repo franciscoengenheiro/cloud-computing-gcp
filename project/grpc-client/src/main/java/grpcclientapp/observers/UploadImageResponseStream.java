@@ -11,7 +11,7 @@ public class UploadImageResponseStream implements StreamObserver<UploadImageResp
 
     @Override
     public void onNext(UploadImageResponse uploadImageResponse) {
-        System.out.println("\nImage uploadeded with id: " + uploadImageResponse.getId());
+        System.out.println("\nImage uploaded with id: " + uploadImageResponse.getId());
     }
 
     @Override

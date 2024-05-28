@@ -1,4 +1,4 @@
-package receiver;
+package app.receiver;
 
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;

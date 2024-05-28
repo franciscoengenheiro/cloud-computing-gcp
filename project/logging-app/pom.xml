@@ -42,7 +42,7 @@
                     </descriptors>
 					<archive>
                           <manifest>
-                              <mainClass>googlepubsub.PubSubClient</mainClass>
+                              <mainClass>app.LoggingApp</mainClass>
                           </manifest>
                      </archive>
                 </configuration>

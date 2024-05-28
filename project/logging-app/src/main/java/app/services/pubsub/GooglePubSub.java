@@ -1,4 +1,4 @@
-package services.pubsub;
+package app.services.pubsub;
 
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
