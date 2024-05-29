@@ -1,8 +1,144 @@
 \chapter{Deployment}\label{ch:deployment}
 
-\section{Virtual Machine Templates}\label{sec:vm-templates}
+On the present phase of our cloud computing project involved several meticulous steps to ensure the creation,
+configuration, and management of virtual machines (VMs) in Google Cloud Platform (GCP). This chapter outlines
+the processes undertaken to set up the base VM, generate associated images, create VM instances and instance groups,
+and configure templates for deployment.
+Additionally, it details the actions performed within the VMs to deploy and run our applications effectively.
+The tools used included Bitvise for secure connections and command execution on the VMs.
 
-Mention the VM templates (grpc server and label )used for the deployment,
-autoscalling off, 0 instance,
-json key in template (dont enter into mutch detail about what is in the slides as it is common knowledge,
-but emphasize the previous aspects)
+\section{Creating the Base VM}\label{sec:creating-the-base-vm}
+
+The first step in our deployment was to create a base VM, which served as the foundation for all subsequent VMs.
+We selected CentOS Stream 8 as our operating system and installed Java 11, a critical requirement for our applications.
+The steps were as follows:
+
+\begin{enumerate}
+    \item \textbf{Create a VM with CentOS Stream 8}:
+    \begin{itemize}
+        \item Access the Google Cloud Console.
+        \item Navigate to the VM instances section.
+        \item Click on \("\)Create Instance\("\) and select CentOS Stream 8 as the operating system.
+        \item Configure the necessary settings (e.g., machine type, disk size).
+    \end{itemize}
+
+    \item \textbf{Install Java 11}:
+    \begin{itemize}
+        \item Use Bitvise to connect to the VM.
+        \item Execute the following commands to install Java 11:
+        \begin{verbatim}
+sudo yum update -y
+sudo yum install java-11-openjdk-devel -y
+sudo yum install -y epel-release
+sudo yum install -y stress
+        \end{verbatim}
+    \end{itemize}
+
+    \item \textbf{Create a boot disk image with Java}:
+    \begin{itemize}
+        \item Once Java 11 was installed, we created an image of this base VM to facilitate easy replication.
+        \item Navigate to the Images section in GCP.
+        \item Click \("\)Create Image\("\) and select the boot disk of the configured VM.
+    \end{itemize}
+\end{enumerate}
+
+
+\section{Generating VM Instances from the Image}\label{sec:generating-vm-instances-from-the-image}
+
+Using the created image, we generated three VM instances, each pre-configured with Java. These instances were designated for different roles: VM-grpc, VM-labels, and VM-logger.
+
+\begin{enumerate}
+    \item \textbf{Creating VM Instances}:
+    \begin{itemize}
+        \item In the VM instances section, select \("\)Create Instance\("\).
+        \item Choose the previously created image from the list of available images.
+        \item Create three instances, ensuring each is tagged with its respective role.
+    \end{itemize}
+
+    \item \textbf{Directory Setup on VMs}:
+    \begin{itemize}
+        \item Connect to each VM via Bitvise.
+        \item Create a directory to store the necessary artifacts:
+        \begin{verbatim}
+sudo mkdir /var/grpcserver
+sudo chmod 777 /var/grpcserver
+        \end{verbatim}
+    \end{itemize}
+\end{enumerate}
+
+
+\section{Configuring VM Templates}\label{sec:configuring-vm-templates}
+
+To streamline the deployment process, we utilized VM templates for our gRPC server and label processing. This involved defining configurations and setting up necessary scripts.
+
+\begin{enumerate}
+    \item \textbf{Creating VM Templates}:
+    \begin{itemize}
+        \item Navigate to the Instance templates section in GCP.
+        \item Click \("\)Create Instance Template\("\).
+        \item Configure the template with the base image and necessary startup scripts.
+    \end{itemize}
+
+    \item \textbf{Startup Script Configuration}:
+    \begin{itemize}
+        \item Each template included a startup script to ensure the applications start correctly:
+        \begin{verbatim}
+#!/bin/bash
+cd /var/grpcserver
+export GOOGLE_APPLICATION_CREDENTIALS=/var/grpcserver/key.json
+java -jar /var/grpcserver/server.jar
+        \end{verbatim}
+    \end{itemize}
+
+    \item \textbf{JSON Key Management}:
+    \begin{itemize}
+        \item The JSON key required for Google Cloud services was included in the template:
+        \begin{itemize}
+            \item Copy the key to \texttt{/var/grpcserver/key.json}.
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+
+\section{Creating Instance Groups and Autoscaling}\label{sec:creating-instance-groups-and-autoscaling}
+
+Instance groups were created to manage the VMs more efficiently, although autoscaling was turned off, and the initial number of instances was set to zero.
+
+\begin{enumerate}
+    \item \textbf{Instance Group Setup}:
+    \begin{itemize}
+        \item Navigate to the Instance groups section.
+        \item Click \("\)Create Instance Group\("\) and choose the previously created templates.
+        \item Set autoscaling to off and the number of instances to zero initially.
+    \end{itemize}
+\end{enumerate}
+
+
+\section{In-VM Configuration and Validation}\label{sec:in-vm-configuration-and-validation}
+
+Inside each VM, additional configurations and validations were performed to ensure the applications ran correctly after reboots and restarts.
+
+\begin{enumerate}
+    \item \textbf{Placing Artifacts}:
+    \begin{itemize}
+        \item Copy the necessary artifacts (e.g., \texttt{server.jar}, \texttt{key.json}) to \texttt{/var/grpcserver}.
+    \end{itemize}
+
+    \item \textbf{Running and Validating Applications}:
+    \begin{itemize}
+        \item Start the applications using the startup script.
+        \item Validate that the applications were running correctly using:
+        \begin{verbatim}
+ps -aux | grep java
+        \end{verbatim}
+    \end{itemize}
+
+    \item \textbf{Automating Start/Stop}:
+    \begin{itemize}
+        \item Ensure the startup script was executed upon each VM reboot to maintain application availability.
+    \end{itemize}
+\end{enumerate}
+
+This deployment strategy, leveraging VM templates and instance groups, facilitated efficient scaling and management of our cloud infrastructure, ensuring robustness and reliability for our applications. The use of Bitvise for secure and straightforward VM management played a crucial role in maintaining smooth operations throughout the deployment process.
+
+
