@@ -24,11 +24,11 @@ This mechanism helps ensure that the client can connect to the server,
 even if the server is not available at the time of the first connection attempts, as it could be overloaded or starting up.
 
 According to the retry configuration, the client tries to connect to the server up to five times,
-with a three-second wait between each attempt.
+with a backoff factor strategy that doubles the waiting time between each retry.
 Additionally,
 the retry is set to retry on specific errors that occur during the connection process
 (e.g., no ip address found, connection error, etc.).
-Any other error that occurs during the connection process is not considered a transient error, and as such, the client lookup service does not retry the connection process.
+Any other error that occurs during the connection process is not considered a transient error, and as such, the client lookup service does not retry.
 
 The client lookup service is responsible
 for fetching the server addresses from the previously mentioned Google Cloud HTTP function.

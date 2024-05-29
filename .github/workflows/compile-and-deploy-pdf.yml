@@ -108,12 +108,16 @@ jobs:
       - name: Move pdf file to output directory
         run: |
           cd ${{ env.LATEX_SOURCE_DIR }}
+          echo "Listing files in src directory"
           ls -lsa
           cd ..
           mkdir -p ${{ env.PDF_OUTPUT_DIR }}
           ls -lsa
+          echo "Moving pdf file to output directory"
           cd ..
           cd ${{ env.LATEX_SOURCE_DIR }}
+          ls -lsa
+          echo "Listing files in src directory before moving"
           mv ${{ env.FILE_NAME }}.pdf ../${{ env.PDF_OUTPUT_DIR }}
 
       # Commit all changed files back to the repository
