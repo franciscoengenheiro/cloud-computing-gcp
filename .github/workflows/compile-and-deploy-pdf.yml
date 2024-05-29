@@ -5,13 +5,13 @@ on:
   push:
     branches: [ "main", "master" ]
     paths:
-      - 'project/report/**'
+      - 'project/report/**' # update in env too
       - '.github/workflows/**'
 
   pull_request:
     branches: [ "main", "master" ]
     paths:
-      - 'project/report/**'
+      - 'project/report/**' # update in env too
       - '.github/workflows/**'
 
   # Allows you to run this workflow manually from the Actions tab
@@ -26,7 +26,7 @@ concurrency:
 
 env:
   FILE_NAME: "main"
-  LATEX_SOURCE_DIR: "report/src"
+  LATEX_SOURCE_DIR: "project/report/src"
   PDF_OUTPUT_DIR: "out"
   PDFLATEX_ARGS: "-file-line-error -interaction=nonstopmode -synctex=1 -output-format=pdf"
 
