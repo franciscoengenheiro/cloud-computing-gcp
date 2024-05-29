@@ -27,7 +27,7 @@ concurrency:
 env:
   FILE_NAME: "main"
   LATEX_SOURCE_DIR: "project/report/src"
-  PDF_OUTPUT_DIR: "out"
+  PDF_OUTPUT_DIR: "project/report/out"
   PDFLATEX_ARGS: "-file-line-error -interaction=nonstopmode -synctex=1 -output-format=pdf"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -110,15 +110,13 @@ jobs:
           cd ${{ env.LATEX_SOURCE_DIR }}
           echo "Listing files in src directory"
           ls -lsa
-          cd ..
+
+          echo "Creating output directory and listing contents"
           mkdir -p ${{ env.PDF_OUTPUT_DIR }}
           ls -lsa
-          echo "Moving pdf file to output directory"
-          cd ..
-          cd ${{ env.LATEX_SOURCE_DIR }}
-          ls -lsa
-          echo "Listing files in src directory before moving"
-          mv ${{ env.FILE_NAME }}.pdf ../${{ env.PDF_OUTPUT_DIR }}
+
+          echo "Moving PDF file to output directory"
+          mv ${{ env.FILE_NAME }}.pdf ${{ env.PDF_OUTPUT_DIR }}
 
       # Commit all changed files back to the repository
       - name: Commit changes
