@@ -8,12 +8,41 @@ The service operations were divided into two categories, each represented by a g
     \item \textbf{Elasticity Management}: operations that allow the system to scale up or down the available resources (i.e., the number of instances of the gRPC server and the image processing application).
 \end{itemize}
 
-
 \section{Functional Operations}\label{sec:functional_operations}
+
+The primary functionalities of the VisionFlow system are the submission and retrieval of pictures together with their attributes. We go into depth about these operations' contracts and designs below.
 
 \subsection{Contract}\label{subsec:functional-operations-contract}
 
+The following characteristics are part of the functional operations:
+
+\begin{itemize}
+    \item \textbf{uploadImage}: Adds a file with an image. The following specifications are necessary for this operation: the chunk—which represents portions of the image sent byte by byte, improving efficiency by avoiding keeping the entire file in memory—the image name, for identification; the content type (contentType), necessary for the file to be correctly visualized after download; and the translation language (translationLang), which gives the client the option of which language to translate the image characteristics—a crucial feature for systems using translation services.
+    \item \textbf{downloadImage}: Utilizing the identification created after the upload, this function downloads a previously uploaded image file. By doing this, you can be confident that the picture will be properly fetched and shown using the contentType that was uploaded.
+    \item \textbf{getImageCharacteristics}: This function uses the image identifier to retrieve an image's processing properties. The results of this operation include the date the image was processed, a list of tags that were discovered in the image, and their translations.
+    \item \textbf{getFileNamesByCharacteristic}: Returns file names depending on a date range and particular picture attributes. This enables the client to look for photos that were produced between two specified dates and that have particular attributes (like photos of animals).
+\end{itemize}
+
 \subsection{Design Aspects}\label{subsec:functional-operations-design-aspects}
+
+The functional service contract was created to facilitate the primary functions of uploading, downloading, and retrieving processed picture data. Every procedure was created with efficiency and ease of use in mind:
+
+The picture name, content type, chunked data, and translation language are required when uploading images. For the picture to be accurately identified and displayed, the content type and image name are necessary. By preventing the complete image from being stored at once, sending data in segments enables effective memory utilization. One crucial component that helps the system be flexible and responsive to the linguistic requirements of the customer is the translation language specification.
+
+When a picture is downloaded, the client retrieves it using the identification that was created during the upload, making sure that all the parameters required for accurate visualization are kept.
+
+The client may obtain comprehensive and practical information about the photos stored in the system through operations like retrieving processed attributes and searching for files based on certain characteristics. These actions also make it easier to manage and utilize stored data.
+
+The functional operations also include the process of image submission and retrieval. An image is first sent by a client application, after which it is safely saved in Cloud Storage to guarantee its availability and preservation. A distinct identification is created and sent back to the gRPC client upon submission, making it simple and quick to refer to the image for upcoming requests. Furthermore, relevant data, such as the request identification and the stored image location, are wrapped into a message and sent to a Pub/Sub topic. This technique efficiently coordinates image processing processes and simplifies communication between different system components.
+
+The functional operations also include logging and image processing mechanisms. A logging mechanism is implemented in order to preserve traceability and fully document all processing requests. The Logging App uses a Pub/Sub subscription to obtain request data, which is then saved in a special Firestore log collection. System activity logs may be easily retrieved and analyzed with this configuration.
+
+Image processing is done effectively and on a large scale by using shared workers. The bucket and blob names of the image are transmitted in messages to each worker, which is represented by the Labels App, for processing. The worker uses the Vision API to determine which labels are in the image after interacting with Cloud Storage to obtain it. Moreover, a translation service is used to convert recognized labels into the target language, guaranteeing system users have a bilingual experience.
+
+Data storage and client information retrieval are also integral parts of the functional operations. After image processing, pertinent request information and analysis outcomes are methodically stored in Firestore. This includes the name of the image, the labels that have been recognized, the processing date, the translated labels, and the translation language of choice. These data are organized in a way that makes it easier to query and conduct statistical studies on the content of processed images in the future.
+
+The client application has the ability to obtain details about images that have been supplied at any moment. To make this easier, the gRPC server uses the request identifier to send a query to Firestore in order to obtain pertinent data. This simplified procedure ensures effective communication between the client and the system, allowing users to quickly obtain the needed information.
+
 
 
 \section{Elasticity Management}\label{sec:elasticity_management}
