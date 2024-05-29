@@ -6,7 +6,6 @@ import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
 
 import java.io.BufferedWriter;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -31,8 +30,6 @@ public class Entrypoint implements HttpFunction {
                     .collect(Collectors.toList());
 
             logger.info("IP addresses: " + ips);
-            // Shuffle the list of IP addresses
-            Collections.shuffle(ips);
 
             // Join the shuffled IP addresses into a single string and write to the response
             String output = String.join(";", ips);

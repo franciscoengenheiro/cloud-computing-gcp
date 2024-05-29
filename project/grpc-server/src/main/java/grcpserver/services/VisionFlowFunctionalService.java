@@ -84,6 +84,11 @@ public class VisionFlowFunctionalService extends VisionFlowFunctionalServiceGrpc
             @Override
             public void onError(Throwable throwable) {
                 logger.severe("Error uploading image: " + throwable.getMessage());
+                // delete the blob if an error occurs
+                if (blobName != null) {
+                    BlobId blobId = BlobId.of(bucketName, blobName);
+                    storage.delete(blobId);
+                }
                 responseObserver.onError(throwable);
             }
 

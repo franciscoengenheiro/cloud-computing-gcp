@@ -12,6 +12,7 @@ import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.core.functions.CheckedSupplier;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
@@ -27,13 +28,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 public class App {
     private static final int SERVER_PORT = 8000;
-    private static final String DEFAULT_SERVER_ADDRESS = "localhost"; // "localhost" or "34.141.73.96" (GCP VM external IP)
+    private static final String DEFAULT_SERVER_ADDRESS = "34.159.219.249"; // "localhost" or "34.141.73.96" (GCP VM external IP)
     private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "https://europe-west3-cn2324-t1-g04.cloudfunctions.net/funcHttp?instance-group=instance-group-grpc-server";
-    private static final boolean developmentMode = true;
+    private static final boolean developmentMode = false; // TODO: Change to false for production
     private static final Logger logger = Logger.getLogger(App.class.getName());
     private static VisionFlowFunctionalServiceGrpc.VisionFlowFunctionalServiceStub noBlockingFunctionalServiceStub;
     private static VisionFlowScalingServiceGrpc.VisionFlowScalingServiceStub noBlockingScalingServiceStub;
@@ -43,11 +45,12 @@ public class App {
     public static void main(String[] args) {
         try {
             System.out.println("In development mode: " + developmentMode);
-            establishConnectionToServer(); // TODO: Change to false for production
+            establishConnectionToServer();
             noBlockingFunctionalServiceStub = VisionFlowFunctionalServiceGrpc.newStub(channel);
             noBlockingScalingServiceStub = VisionFlowScalingServiceGrpc.newStub(channel);
             int option;
             do {
+                checkServerConnectionAndReconnectIfNeeded();
                 System.out.println("\n######## MENU ##########");
                 System.out.println("1: Upload Image");
                 System.out.println("2: Download Image");
@@ -98,11 +101,27 @@ public class App {
         }
     }
 
+    private static void checkServerConnectionAndReconnectIfNeeded() throws Throwable {
+        // get the current state of the channel
+        ConnectivityState state = channel.getState(true);
+        logger.info("Channel state: " + state);
+        // IMPORTANT NOTE: grpc channel has a retry mechanism built-in with a backoff strategy
+        //  but if the connection is broken, do not use the channel's retry mechanism
+        //  use ours instead
+        // SOURCE: https://grpc.github.io/grpc/core/md_doc_connectivity-semantics-and-api.html
+        if (state != ConnectivityState.READY) {
+            establishConnectionToServer();
+        }
+    }
+
+    private static final Predicate<Throwable> isConnectionError = e -> e instanceof FailedConnectionException || e instanceof NoServerIpException;
+
     private static void establishConnectionToServer() throws Throwable {
         // Using a retry mechanism to establish connection to the server
         // Retry mechanism will try to connect to the server 5 times with a 3-second wait between each attempt
         RetryConfig config = RetryConfig.custom()
                 .maxAttempts(5) // 5 attempts (1 initial + 4 retries)
+                .retryOnException(isConnectionError)
                 // Wait 1 second before the first retry, then 2 seconds, 4 seconds, 8 seconds, etc.
                 .intervalFunction(IntervalFunction.ofExponentialBackoff(1000, 2))
                 .build();
@@ -124,13 +143,13 @@ public class App {
             do {
                 // get the current state of the channel
                 switch (channel.getState(true)) {
-                    case CONNECTING:
                     case READY:
                         logger.info("Successfully connected to server at: " + serverIp);
                         return channel;
                     case TRANSIENT_FAILURE:
                     case SHUTDOWN:
                         throw new FailedConnectionException("Failed to connect to server at: " + serverIp);
+                    case CONNECTING:
                     case IDLE:
                     default:
                 }
@@ -165,9 +184,13 @@ public class App {
             String[] ips = response.split(";");
             System.out.println("IPs found:");
             for (String ip : ips) {
-                System.out.println(ip);
+                // print with index
+                System.out.println("[" + ((ip.indexOf(ip))) + "]: " + ip);
             }
-            return ips[0]; // return the first IP since it's already shuffled
+            // ask user to choose an IP to connect to
+            int index = readInt("Enter the index of the IP to connect to: ");
+            return ips[index];
+
         } catch (IOException | InterruptedException e) {
             logger.severe("Error looking up service IP address: " + e.getMessage());
             return null;
@@ -200,7 +223,7 @@ public class App {
 
     private static void uploadImage() throws IOException {
         String imagePath = readString("Enter the path of the image to upload (e.g., project/grpc-client/src/main/java/resources/cat.jpg): ");
-        String translationlang = readString("Enter the language to translate the image to " + String.join(", ", languages) + ": ");
+        String translationlang = readString("Enter the language to translate the image to [" + String.join(", ", languages) + "]: ");
         StreamObserver<UploadImageResponse> responseStream = new UploadImageResponseStream();
         StreamObserver<UploadImageRequest> streamToAddImageBytes = noBlockingFunctionalServiceStub.uploadImage(responseStream);
         // Read bytes from file and send to server
