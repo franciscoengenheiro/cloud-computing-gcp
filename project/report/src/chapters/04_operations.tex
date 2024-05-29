@@ -8,41 +8,69 @@ The service operations were divided into two categories, each represented by a g
     \item \textbf{Elasticity Management}: operations that allow the system to scale up or down the available resources (i.e., the number of instances of the gRPC server and the image processing application).
 \end{itemize}
 
+All messages in contract are prefixed with \texttt{Request} or \texttt{Response}
+to indicate the direction of the message in order to improve the readability of the contract.
+
+
 \section{Functional Operations}\label{sec:functional_operations}
 
-The primary functionalities of the VisionFlow system are the submission and retrieval of pictures together with their attributes. We go into depth about these operations' contracts and designs below.
+The primary functionalities of the VisionFlow system are the submission (upload) and retrieval of image data;
+and the processing of images to extract relevant information.
+These functionalities are implemented in the functional operations contract.
 
 \subsection{Contract}\label{subsec:functional-operations-contract}
 
-The following characteristics are part of the functional operations:
+The functional service contract has the following RPC~\cite{rpc-protocol} operations:
 
 \begin{itemize}
-    \item \textbf{uploadImage}: Adds a file with an image. The following specifications are necessary for this operation: the chunk—which represents portions of the image sent byte by byte, improving efficiency by avoiding keeping the entire file in memory—the image name, for identification; the content type (contentType), necessary for the file to be correctly visualized after download; and the translation language (translationLang), which gives the client the option of which language to translate the image characteristics—a crucial feature for systems using translation services.
-    \item \textbf{downloadImage}: Utilizing the identification created after the upload, this function downloads a previously uploaded image file. By doing this, you can be confident that the picture will be properly fetched and shown using the contentType that was uploaded.
-    \item \textbf{getImageCharacteristics}: This function uses the image identifier to retrieve an image's processing properties. The results of this operation include the date the image was processed, a list of tags that were discovered in the image, and their translations.
-    \item \textbf{getFileNamesByCharacteristic}: Returns file names depending on a date range and particular picture attributes. This enables the client to look for photos that were produced between two specified dates and that have particular attributes (like photos of animals).
+    \item \textbf{uploadImage}: Adds a file with an image.
+    The image is sent in chunks, and the operation returns an image identifier.
+    \item \textbf{downloadImage}: With the image identifier created after the upload,
+    this operation downloads a previously uploaded image file;
+    \item \textbf{getImageCharacteristics}: Uses the image identifier to retrieve an image's processing data.
+    \item \textbf{getFileNamesByCharacteristic}:
+    Returns stored file names depending on a date range and particular picture characteristic
+    (e.g., images that contain cats in the last week).
+\end{itemize}
+
+The following messages are used in the contract:
+
+\begin{itemize}
+    \item \textbf{UploadImageRequest}:
+    Contains the chunk of data of the image (which represents portions of the image), its name, the content type (for download visualization), and translation language (for image labels translation);
+    \item \textbf{UploadImageResponse}:
+    Contains the image identifier generated after the image is uploaded, which is used to identify the image in the system;
+    \item \textbf{DownloadImageRequest}:
+    Contains the image identifier and the path where the image will be saved in the client's system;
+    \item \textbf{DownloadImageResponse}:
+    Contains the name, complete data in bytes, and content type of the image;
+    \item \textbf{GetImageCharacteristicsRequest}:
+    Contains the image identifier;
+    \item \textbf{GetImageCharacteristicsResponse}:
+    Contains the list of labels found in the image, the translations corresponding to the characteristics, and the date the image was processed;
+    \item \textbf{GetFileNamesRequest}:
+    Contains the start date, end date, and characteristic to search for;
+    \item \textbf{GetFileNamesResponse}:
+    Contains the list of file names found based on the image processing characteristics query.
 \end{itemize}
 
 \subsection{Design Aspects}\label{subsec:functional-operations-design-aspects}
 
-The functional service contract was created to facilitate the primary functions of uploading, downloading, and retrieving processed picture data. Every procedure was created with efficiency and ease of use in mind:
+On the upload operation, instead of the server receiving the entire image at once, the image is sent in parts, which are then processed by the server.
+By preventing the complete image from being stored at once,
+sending data in chunks enables effective memory utilization in the server
+(i.e., if n clients are uploading images simultaneously with y MB of data, the server will not need to store all the data at once - n x y in the worst-case scenario).
+On error, the server deletes the image data that was already stored, ensuring that the system is not overloaded with unnecessary data.
 
-The picture name, content type, chunked data, and translation language are required when uploading images. For the picture to be accurately identified and displayed, the content type and image name are necessary. By preventing the complete image from being stored at once, sending data in segments enables effective memory utilization. One crucial component that helps the system be flexible and responsive to the linguistic requirements of the customer is the translation language specification.
+To let the client choose the translation language, a translation language field was added to the correspondent message.
+An improvement we had in mind but did not implement was to allow the client to process the image in multiple languages simultaneously.
 
-When a picture is downloaded, the client retrieves it using the identification that was created during the upload, making sure that all the parameters required for accurate visualization are kept.
-
-The client may obtain comprehensive and practical information about the photos stored in the system through operations like retrieving processed attributes and searching for files based on certain characteristics. These actions also make it easier to manage and utilize stored data.
-
-The functional operations also include the process of image submission and retrieval. An image is first sent by a client application, after which it is safely saved in Cloud Storage to guarantee its availability and preservation. A distinct identification is created and sent back to the gRPC client upon submission, making it simple and quick to refer to the image for upcoming requests. Furthermore, relevant data, such as the request identification and the stored image location, are wrapped into a message and sent to a Pub/Sub topic. This technique efficiently coordinates image processing processes and simplifies communication between different system components.
-
-The functional operations also include logging and image processing mechanisms. A logging mechanism is implemented in order to preserve traceability and fully document all processing requests. The Logging App uses a Pub/Sub subscription to obtain request data, which is then saved in a special Firestore log collection. System activity logs may be easily retrieved and analyzed with this configuration.
-
-Image processing is done effectively and on a large scale by using shared workers. The bucket and blob names of the image are transmitted in messages to each worker, which is represented by the Labels App, for processing. The worker uses the Vision API to determine which labels are in the image after interacting with Cloud Storage to obtain it. Moreover, a translation service is used to convert recognized labels into the target language, guaranteeing system users have a bilingual experience.
-
-Data storage and client information retrieval are also integral parts of the functional operations. After image processing, pertinent request information and analysis outcomes are methodically stored in Firestore. This includes the name of the image, the labels that have been recognized, the processing date, the translated labels, and the translation language of choice. These data are organized in a way that makes it easier to query and conduct statistical studies on the content of processed images in the future.
-
-The client application has the ability to obtain details about images that have been supplied at any moment. To make this easier, the gRPC server uses the request identifier to send a query to Firestore in order to obtain pertinent data. This simplified procedure ensures effective communication between the client and the system, allowing users to quickly obtain the needed information.
-
+The upload operation returns an image identifier, which is used to refer to the image in the system.
+The identifier is generated by the server and sent back to the client after the image is successfully uploaded.
+It is composed of the image name and a random UUID~\cite{oracle-uuid} (e.g., cat\#abcd-6708300c-230e-4076-84cd-bfc20b512732).
+This identifier can be used to download the image, retrieve its characteristics,
+and query for other images with similar characteristics.
+The separation of the image name and the UUID is necessary in the download operation to allow the client to save the image with the original name.
 
 
 \section{Elasticity Management}\label{sec:elasticity_management}
@@ -89,7 +117,7 @@ The grpc contract for the elasticity management service was designed
 to allow for instance management and listing without depending on a specific instance group.
 
 The client can request the list of managed instance groups and then request additional operations such as resizing or listing VMs in a specific instance group.
-This way, the contract won't need to be altered if more instance or less instance groups are added to the system in the future.
+This way, the contract won't need to be altered if more or less instance groups are added to the system in the future.
 
 However, the server implementation will need to be updated to handle the new instance groups,
 as that information is stored locally.

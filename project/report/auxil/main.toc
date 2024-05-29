@@ -8,15 +8,19 @@
 \contentsline {chapter}{\numberline {4}Operations}{6}{}%
 \contentsline {section}{\numberline {4.1}Functional Operations}{6}{}%
 \contentsline {subsection}{\numberline {4.1.1}Contract}{6}{}%
-\contentsline {subsection}{\numberline {4.1.2}Design Aspects}{6}{}%
-\contentsline {section}{\numberline {4.2}Elasticity Management}{6}{}%
-\contentsline {subsection}{\numberline {4.2.1}Contract}{6}{}%
-\contentsline {subsection}{\numberline {4.2.2}Design Aspects}{7}{}%
-\contentsline {chapter}{\numberline {5}Client Connection}{8}{}%
-\contentsline {section}{\numberline {5.1}Cloud Http Function}{8}{}%
-\contentsline {section}{\numberline {5.2}Client Lookup Service}{8}{}%
-\contentsline {chapter}{\numberline {6}Deployment}{10}{}%
-\contentsline {section}{\numberline {6.1}Virtual Machine Templates}{10}{}%
-\contentsline {chapter}{\numberline {7}Project Structure}{11}{}%
-\contentsline {chapter}{\numberline {8}Conclusion}{12}{}%
-\contentsline {chapter}{References}{12}{}%
+\contentsline {subsection}{\numberline {4.1.2}Design Aspects}{7}{}%
+\contentsline {section}{\numberline {4.2}Elasticity Management}{7}{}%
+\contentsline {subsection}{\numberline {4.2.1}Contract}{8}{}%
+\contentsline {subsection}{\numberline {4.2.2}Design Aspects}{8}{}%
+\contentsline {chapter}{\numberline {5}Client Connection}{10}{}%
+\contentsline {section}{\numberline {5.1}Cloud Http Function}{10}{}%
+\contentsline {section}{\numberline {5.2}Client Lookup Service}{10}{}%
+\contentsline {chapter}{\numberline {6}Deployment}{12}{}%
+\contentsline {section}{\numberline {6.1}Creating the Base VM}{12}{}%
+\contentsline {section}{\numberline {6.2}Generating VM Instances from the Image}{13}{}%
+\contentsline {section}{\numberline {6.3}Configuring VM Templates}{13}{}%
+\contentsline {section}{\numberline {6.4}Creating Instance Groups and Autoscaling}{14}{}%
+\contentsline {section}{\numberline {6.5}In-VM Configuration and Validation}{14}{}%
+\contentsline {chapter}{\numberline {7}Project Structure}{15}{}%
+\contentsline {chapter}{\numberline {8}Conclusion}{16}{}%
+\contentsline {chapter}{References}{16}{}%

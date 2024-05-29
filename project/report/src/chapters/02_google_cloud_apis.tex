@@ -1,12 +1,12 @@
 \chapter{Google Cloud APIs}\label{ch:google_cloud_apis}
 
-The Google Cloud Platform (GCP) offers a variety of cloud services and APIs that may be used to create applications that are scalable and efficient. Several Google Cloud APIs were used in this project to construct the picture processing and translation service. Several aspects of the image processing workflow, such as storage, messaging, picture analysis, and translation, were handled by these APIs. The project made use of the Google Cloud APIs listed below:
+The Google Cloud Platform~\cite{google-cloud-platform} (GCP) offers a variety of cloud services and APIs that may be used to create applications that are scalable and efficient. Several Google Cloud APIs were used in this project to construct the picture processing and translation service. Several aspects of the image processing workflow, such as storage, messaging, picture analysis, and translation, were handled by these APIs. The project made use of the Google Cloud APIs listed below:
 
 \begin{itemize}
-    \item \textbf{Google Cloud Storage}: This cloud-based object storage service is utilized to store the images that the client submits. These images are saved as binary big objects, or blobs.
-    \item \textbf{Google Cloud Pub/Sub}: This is a messaging service that alerts the image processing applications when a fresh image becomes available for processing. It guarantees that the applicants for cessation are promptly informed of any new les to cess.
-    \item \textbf{Google Cloud HTTP Function}: This is a serverless function that the client uses to retrieve the IP addresses of servers that are currently in use inside an SSP instance group. It facilitates the dynamic retrieval of data from instances of inactive servers.
-    \item \textbf{Google Cloud Compute Engine}: Both monitoring and orchestration use this service. It oversees the instance groups of the server and the image processing program, making sure that resources are properly categorized and monitored.
-    \item \textbf{Google Cloud Vision}: This cloud service is used to identify features in the images. It offers powerful image analysis skills to recognize a range of components and features with.
-    \item \textbf{Google Cloud Translation}: This cloud service converts the identified attributes from English to another language. By translating the identified features into the intended target language, it allows multilingual support.
+    \item \textbf{Google Cloud Storage}: A scalable and secure object storage service for various types of data. It allows you to store and retrieve any amount of data at any time. It is designed for high durability and availability:
+    \item \textbf{Google Cloud Pub/Sub}: A messaging service for building event-driven systems and real-time analytics. It enables asynchronous messaging between independent applications, ensuring reliable message delivery;
+    \item \textbf{Google Cloud Functions}: A serverless execution environment for building and connecting cloud services. With Cloud Functions, you can write simple, single-purpose functions that are attached to events emitted from your cloud infrastructure and services;
+    \item \textbf{Google Compute Engine}: Provides scalable virtual machines (VMs) that run on Google’s infrastructure. It offers flexibility in deployment and management of virtualized resources, enabling robust orchestration and monitoring of computing resources;
+    \item \textbf{Google Cloud Vision}: An image analysis service that provides powerful image recognition capabilities. It can detect objects, text, and scenes within images, offering insights and metadata to enhance applications;
+    \item \textbf{Google Cloud Translation}: Provides simple, programmatic access to translation services. It supports translation between multiple languages, enabling multilingual support for applications by converting text from one language to another.
 \end{itemize}

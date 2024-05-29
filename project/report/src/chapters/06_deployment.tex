@@ -5,7 +5,8 @@ configuration, and management of virtual machines (VMs) in Google Cloud Platform
 the processes undertaken to set up the base VM, generate associated images, create VM instances and instance groups,
 and configure templates for deployment.
 Additionally, it details the actions performed within the VMs to deploy and run our applications effectively.
-The tools used included Bitvise for secure connections and command execution on the VMs.
+The tools used included Bitvise~\cite{bitvise-ssh-client} for secure connections and command execution on the VMs.
+
 
 \section{Creating the Base VM}\label{sec:creating-the-base-vm}
 
@@ -29,8 +30,6 @@ The steps were as follows:
         \begin{verbatim}
 sudo yum update -y
 sudo yum install java-11-openjdk-devel -y
-sudo yum install -y epel-release
-sudo yum install -y stress
         \end{verbatim}
     \end{itemize}
 
@@ -58,7 +57,7 @@ Using the created image, we generated three VM instances, each pre-configured wi
     \item \textbf{Directory Setup on VMs}:
     \begin{itemize}
         \item Connect to each VM via Bitvise.
-        \item Create a directory to store the necessary artifacts:
+        \item Create a directory to store the necessary artifacts.
         \begin{verbatim}
 sudo mkdir /var/grpcserver
 sudo chmod 777 /var/grpcserver
@@ -102,7 +101,8 @@ java -jar /var/grpcserver/server.jar
 
 \section{Creating Instance Groups and Autoscaling}\label{sec:creating-instance-groups-and-autoscaling}
 
-Instance groups were created to manage the VMs more efficiently, although autoscaling was turned off, and the initial number of instances was set to zero.
+Instance groups were created to manage the VMs programmatically, allowing for the scaling on-demand.
+This was done by setting the autoscaling option to off and setting the number of instances to zero initially.
 
 \begin{enumerate}
     \item \textbf{Instance Group Setup}:
@@ -139,6 +139,5 @@ ps -aux | grep java
     \end{itemize}
 \end{enumerate}
 
-This deployment strategy, leveraging VM templates and instance groups, facilitated efficient scaling and management of our cloud infrastructure, ensuring robustness and reliability for our applications. The use of Bitvise for secure and straightforward VM management played a crucial role in maintaining smooth operations throughout the deployment process.
-
-
+This deployment strategy, leveraging VM templates and instance groups, facilitated efficient scaling and management of our cloud infrastructure, ensuring robustness and reliability for our applications.
+The use of Bitvise for secure and straightforward VM management played a crucial role in maintaining smooth operations throughout the deployment process.

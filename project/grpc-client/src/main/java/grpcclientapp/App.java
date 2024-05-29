@@ -180,7 +180,6 @@ public class App {
                 System.out.println("No IPs found.");
                 return null;
             }
-            // Cloud Http Function returns a list of IPs shuffled and separated by ";"
             String[] ips = response.split(";");
             System.out.println("IPs found:");
             for (String ip : ips) {

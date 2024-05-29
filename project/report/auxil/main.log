@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  27 MAY 2024 10:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.5.24)  29 MAY 2024 19:49
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -307,31 +307,50 @@ Chapter 4.
 
 LaTeX Warning: Citation `grpc-protobuf' on page 6 undefined on input line 4.
 
+
+LaTeX Warning: Citation `rpc' on page 6 undefined on input line 23.
+
 [6
 
-]) (chapters/05_client_connection.tex [7]
+]
+
+LaTeX Warning: Citation `java-UUID' on page 7 undefined on input line 70.
+
+chapters/04_operations.tex:70: You can't use `macro parameter character #' in h
+orizontal mode.
+l.70 ...a random UUID~\cite{java-UUID} (e.g., cat#
+                                                  abcd-6708300c-230e-4076-84...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+[7]) (chapters/05_client_connection.tex [8] [9]
 Chapter 5.
 
-LaTeX Warning: Citation `retry-pattern' on page 8 undefined on input line 19.
+LaTeX Warning: Citation `retry-pattern' on page 10 undefined on input line 22.
 
-) (chapters/06_deployment.tex [8
+[10
 
-] [9]
+]) (chapters/06_deployment.tex [11]
 Chapter 6.
-) (chapters/07_project_structure.tex [10
 
-]
+LaTeX Warning: Citation `bitwise' on page 12 undefined on input line 8.
+
+[12
+
+] [13]) (chapters/07_project_structure.tex [14]
 Chapter 7.
 
-LaTeX Warning: Citation `maven' on page 11 undefined on input line 3.
+LaTeX Warning: Citation `maven' on page 15 undefined on input line 3.
 
-) (chapters/08_conclusion.tex [11
+) (chapters/08_conclusion.tex [15
 
 ]
 Chapter 8.
 )
 No file main.bbl.
-[12
+[16
 
 ] (C:/Users\franc\IdeaProjects\CN-2324-G04\project\report\auxil\main.aux)
  ***********
@@ -347,13 +366,13 @@ LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
  ) 
 Here is how much of TeX's memory you used:
- 4421 strings out of 474370
- 75996 string characters out of 5740535
- 1932754 words of memory out of 5000000
- 26751 multiletter control sequences out of 15000+600000
+ 4431 strings out of 474370
+ 76332 string characters out of 5740535
+ 1935754 words of memory out of 5000000
+ 26761 multiletter control sequences out of 15000+600000
  570319 words of font info for 58 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,6n,68p,543b,236s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 62i,6n,68p,543b,370s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti
 1095.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi60
 0\ectt1095.pk> <C:\Users\franc\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec
@@ -364,11 +383,12 @@ ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\franc\AppData\Local\MiKTeX\fon
 ts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\franc\AppData\Local\MiKT
 eX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\franc\AppData\Loca
 l\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk><C:/Users/franc/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/franc
+/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
 Output written on C:/Users\franc\IdeaProjects\CN-2324-G04\project\report\out\ma
-in.pdf (13 pages, 403293 bytes).
+in.pdf (17 pages, 435114 bytes).
 PDF statistics:
- 369 PDF objects out of 1000 (max. 8388607)
+ 425 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
