@@ -1,4 +1,26 @@
 \chapter{Introduction}\label{ch:introduction}
 
+In this era of fast technological advancement, cloud computing stands out as an excellent alternative for data-intensive jobs. The ability to develop and deploy systems that use integrated Google Cloud Platform (GCP) services is a must-have talent for IT professionals. In the framework of the Cloud Computing course, this project showcases the building of a resilient and elastic system, dubbed VisionFlow, which utilizes multiple GCP services including Cloud Storage, Firestore, Pub/Sub, Compute Engine, and Cloud Functions to process and analyze photos. The VisionFlow system detects characteristics (labels) in image files (JPG, PNG, etc.) and translates them from English to Portuguese.
+
+Elasticity is a crucial aspect of the system, allowing it to modify image processing capacity in response to demand. Client applications can access the system's features using two separate gRPC services, SF and SG, which are hosted on the same server. The SF service oversees functional operations, whereas the SG service manages the system's flexibility.
+
+Functional operations include submitting picture files for characteristic detection, receiving identified characteristics and translations, and searching stored files using defined criteria. The gRPC interface facilitates communication between the client and the system while abstracting the complexities of the GCP platform.
+
+To guarantee high availability and load balancing, the system runs numerous instances of the gRPC server, each on its own virtual machine within an instance group. Elasticity management is accomplished by dynamically altering the number of gRPC server instances and image processing programs.
+
+VisionFlow architecture seamlessly combines multiple GCP services. Cloud Storage saves the photos to be analyzed, whereas Firestore keeps full records of the operations and results. Pub/Sub enables decoupled communication between gRPC servers and image processing applications, resulting in more efficient message transmission. The gRPC servers and image analysis programs are hosted on Compute Engine virtual machines and instance groups. Furthermore, Cloud Functions is utilized to create a lookup function for gRPC server addresses.
+
+This project explains how to use cloud computing infrastructure for complicated activities and emphasizes the significance of an efficient architecture design that allows for scalability and dynamic resource management. The deployment of VisionFlow demonstrates the ability of contemporary technology to generate innovative solutions that fulfill large-scale data processing requirements.
 
 \section{Document Structure}\label{sec:document_structure}
+
+The report is organized as follows:
+
+\begin{enumerate}
+    \item Google Cloud APIs: Detailed description of the Google Cloud APIs used in the project.
+    \item Architecture: Overview of the system architecture, including interactions between components.
+    \item Operations and Client Connection: Explanation of the system's functional operations and client interaction.
+    \item Deployment: Process of deploying the system on the GCP infrastructure.
+    \item Project Structure: Organization of the code and resources used in the project.
+    \item Conclusion: Reflection on the results achieved and potential future improvements.
+\end{enumerate}
