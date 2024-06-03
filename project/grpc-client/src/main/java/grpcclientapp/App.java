@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 public class App {
     private static final int SERVER_PORT = 8000;
-    private static final String DEFAULT_SERVER_ADDRESS = "34.159.219.249"; // "localhost" or "34.141.73.96" (GCP VM external IP)
+    private static final String DEFAULT_SERVER_ADDRESS = "34.159.185.158"; // "localhost" or "34.141.73.96" (GCP VM external IP)
     private static final String CLOUD_FUNCTION_IP_LOOKUP_URL = "https://europe-west3-cn2324-t1-g04.cloudfunctions.net/funcHttp?instance-group=instance-group-grpc-server";
     private static final boolean developmentMode = false; // TODO: Change to false for production
     private static final Logger logger = Logger.getLogger(App.class.getName());
@@ -182,9 +182,9 @@ public class App {
             }
             String[] ips = response.split(";");
             System.out.println("IPs found:");
-            for (String ip : ips) {
-                // print with index
-                System.out.println("[" + ((ip.indexOf(ip))) + "]: " + ip);
+            for (int i = 0; i < ips.length; i++) {
+                String ip = ips[i];
+                System.out.println("[" + ((i)) + "]: " + ip);
             }
             // ask user to choose an IP to connect to
             int index = readInt("Enter the index of the IP to connect to: ");
